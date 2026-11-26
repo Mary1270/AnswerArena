@@ -19,8 +19,8 @@ Open question bounties on GenLayer. An asker posts a question, a bounty in GEN, 
 
 | | |
 | --- | --- |
-| Contract | `ADDRESS` |
-| Explorer | https://explorer-studio.genlayer.com/address/ADDRESS |
+| Contract | `0xe5E95797708abC7eB6795884d719e725b0876b56` |
+| Explorer | https://explorer-studio.genlayer.com/address/0xe5E95797708abC7eB6795884d719e725b0876b56 |
 | Frontend | https://mary1270.github.io/AnswerArena/ |
 | Network | GenLayer Studio |
 
@@ -52,7 +52,7 @@ python3 tools/make_sandbox.py --check
 ## Deploy and try it
 
 1. Open GenLayer Studio, deploy `contract_sandbox.py` (no constructor arguments) and copy the address.
-2. Open `index.html?contract=ADDRESS`, or paste the address in the wallet menu. For a permanent default, set `DEFAULT_CONTRACT_ADDRESS` in `index.html`.
+2. Open `index.html?contract=0xe5E95797708abC7eB6795884d719e725b0876b56`, or paste the address in the wallet menu. For a permanent default, set `DEFAULT_CONTRACT_ADDRESS` in `index.html`.
 3. Follow the **Lab** tab, or the table in `TESTING.md`.
 
 Use `contract.py` for a production-style deployment (answers stay open for at least one hour).
