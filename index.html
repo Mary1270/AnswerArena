@@ -1,0 +1,1321 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#ECEFF3" id="themeColor">
+<script>try{var t=localStorage.getItem("answerarena.theme");if(t){document.documentElement.dataset.theme=t;}}catch(e){}</script>
+<meta name="description" content="AnswerArena: open question bounties on GenLayer. Post a question, set a rubric, and an LLM grades every answer against it.">
+<title>AnswerArena</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --ground:#ECEFF3; --surface:#FFFFFF; --surface-2:#F5F7F9; --ink:#131B24; --ink-2:#435060; --ink-3:#5B6775;
+  --line:#D5DBE2; --line-strong:#B6C0CB;
+  --accent:#4338CA; --accent-hover:#3730A3; --accent-soft:#E8E9FB; --on-accent:#FFFFFF;
+  --ok:#1D6F45; --ok-soft:#E0F0E6; --warn:#8A5A00; --warn-soft:#FBEFD9; --bad:#A8261B; --bad-soft:#F8E3E0;
+  --info:#2F5D8A; --info-soft:#E3ECF5; --mute:#4F5B68; --mute-soft:#E8ECEF;
+  --shadow:0 1px 2px rgba(19,27,36,.06),0 2px 8px rgba(19,27,36,.05); --shadow-pop:0 16px 48px rgba(19,27,36,.22);
+  --font:"Public Sans",ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --r1:6px; --r2:10px; --r3:14px; --nav-h:64px; --side-w:236px; --ease:cubic-bezier(.2,.7,.2,1);
+  color-scheme:light;
+}
+:root[data-theme="dark"]{
+  --ground:#0C0F14; --surface:#151A21; --surface-2:#1A2029; --ink:#E8ECF2; --ink-2:#B3BDC9; --ink-3:#8E9AA8;
+  --line:#262E39; --line-strong:#3A4553;
+  --accent:#A5B4FC; --accent-hover:#C3CDFE; --accent-soft:#1F2347; --on-accent:#14163A;
+  --ok:#6FD39A; --ok-soft:#15301F; --warn:#F2BE5C; --warn-soft:#33270F; --bad:#FF8A7D; --bad-soft:#3A1C19;
+  --info:#8FB8E3; --info-soft:#172636; --mute:#A3AEBB; --mute-soft:#1F2630;
+  --shadow:0 1px 2px rgba(0,0,0,.35),0 2px 8px rgba(0,0,0,.25); --shadow-pop:0 16px 48px rgba(0,0,0,.6);
+  color-scheme:dark;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#0C0F14; --surface:#151A21; --surface-2:#1A2029; --ink:#E8ECF2; --ink-2:#B3BDC9; --ink-3:#8E9AA8;
+    --line:#262E39; --line-strong:#3A4553;
+    --accent:#A5B4FC; --accent-hover:#C3CDFE; --accent-soft:#1F2347; --on-accent:#14163A;
+    --ok:#6FD39A; --ok-soft:#15301F; --warn:#F2BE5C; --warn-soft:#33270F; --bad:#FF8A7D; --bad-soft:#3A1C19;
+    --info:#8FB8E3; --info-soft:#172636; --mute:#A3AEBB; --mute-soft:#1F2630;
+    --shadow:0 1px 2px rgba(0,0,0,.35),0 2px 8px rgba(0,0,0,.25); --shadow-pop:0 16px 48px rgba(0,0,0,.6);
+    color-scheme:dark;
+  }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased;
+  overflow-x:hidden;padding-bottom:calc(var(--nav-h) + env(safe-area-inset-bottom))}
+h1,h2,h3{margin:0;line-height:1.2;letter-spacing:-.015em}
+h1{font-size:clamp(24px,4.6vw,30px);font-weight:700}
+h2{font-size:19px;font-weight:700}
+h3{font-size:16px;font-weight:600}
+p{margin:0}
+a{color:var(--accent);text-underline-offset:3px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+.skip{position:absolute;left:8px;top:-60px;z-index:100;background:var(--ink);color:var(--ground);padding:10px 14px;border-radius:var(--r1)}
+.skip:focus{top:8px}
+svg.ic{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.muted{color:var(--ink-2)} .small{font-size:14px} .xs{font-size:12.5px;color:var(--ink-3)}
+.num{font-feature-settings:"tnum" 1}
+.addr{word-break:break-all}
+.grow{flex:1}
+.row{display:flex;align-items:center;gap:12px}.between{justify-content:space-between}.wrap{flex-wrap:wrap}
+.stack>*+*{margin-top:16px}.stack-lg>*+*{margin-top:24px}
+
+.topbar{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:12px;height:56px;padding:0 16px;background:var(--ground);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;color:var(--ink);text-decoration:none;font-weight:700;font-size:18px;letter-spacing:-.02em;min-height:44px;flex:none}
+.mark{width:28px;height:28px;flex:none;display:block}
+.env{font-size:12.5px;font-weight:600;padding:2px 8px;border-radius:999px;border:1px solid var(--line-strong);color:var(--ink-2);white-space:nowrap}
+@media (max-width:479px){.topbar .env{display:none}}
+.iconbtn{width:40px;height:40px;display:grid;place-items:center;border:1px solid var(--line-strong);background:var(--surface);color:var(--ink-2);border-radius:var(--r1);cursor:pointer;flex:none}
+.iconbtn:hover{color:var(--ink)}
+.walletbtn{display:inline-flex;align-items:center;gap:8px;min-height:40px;min-width:0;max-width:56vw;padding:0 12px;border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);border-radius:var(--r1);font:inherit;font-size:14px;font-weight:600;cursor:pointer}
+.walletbtn .lbl{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.walletbtn .dot{width:8px;height:8px;border-radius:50%;background:var(--ink-3);flex:none}
+.walletbtn.on .dot{background:var(--ok)}.walletbtn.warn .dot{background:var(--warn)}
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:40;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+nav.tabs ul{list-style:none;margin:0;padding:4px 6px;display:grid;grid-template-columns:repeat(4,1fr);gap:2px;height:var(--nav-h)}
+nav.tabs a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;height:100%;border-radius:var(--r2);color:var(--ink-3);text-decoration:none;font-size:12px;font-weight:600;border:1px solid transparent}
+nav.tabs a[aria-current="page"]{color:var(--ink)}
+nav.tabs a[aria-current="page"] svg{color:var(--accent)}
+nav.tabs .side-brand{display:none}
+main{padding:24px 16px 48px;max-width:1120px;margin:0 auto}
+main:focus{outline:none}
+footer.foot{max-width:1120px;margin:0 auto;padding:0 16px 32px;font-size:12.5px;color:var(--ink-3)}
+footer.foot p+p{margin-top:4px}
+.footaddr{display:flex;flex-wrap:wrap;align-items:center;gap:0 8px}.footaddr #footAddr{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+.linkbtn{display:inline-flex;align-items:center;min-height:36px;padding:0 8px;border:0;background:none;color:var(--accent);font:inherit;font-weight:600;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+@media (min-width:1024px){
+  body{padding-bottom:0;padding-left:var(--side-w)}
+  .topbar{padding:0 32px}.topbar .brand{display:none}
+  nav.tabs{top:0;right:auto;width:var(--side-w);bottom:0;border-top:0;border-right:1px solid var(--line);background:var(--surface);padding:12px}
+  nav.tabs .side-brand{display:flex;padding:0 12px;margin-bottom:8px}
+  nav.tabs ul{display:flex;flex-direction:column;height:auto;padding:12px 0;gap:4px}
+  nav.tabs a{flex-direction:row;justify-content:flex-start;gap:12px;height:44px;padding:0 12px;font-size:14px}
+  nav.tabs a[aria-current="page"]{border-color:var(--line-strong);background:var(--surface)}
+  main{padding:32px 32px 48px}footer.foot{padding:0 32px 32px}
+}
+.pagehead{margin-bottom:24px}.pagehead p{margin-top:6px;color:var(--ink-2);max-width:60ch}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r3);padding:24px;box-shadow:var(--shadow);min-width:0}
+@media (max-width:420px){.panel{padding:16px}}
+.inset{background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r2);padding:16px}
+.callout{border-left:3px solid var(--accent);background:var(--accent-soft);padding:12px 16px;border-radius:0 var(--r2) var(--r2) 0;font-size:14px}
+.callout.bad{border-color:var(--bad);background:var(--bad-soft)}.callout.warn{border-color:var(--warn);background:var(--warn-soft)}
+.cols{display:grid;gap:24px;grid-template-columns:minmax(0,1fr)}
+@media (max-width:899px){.cols>.first-mobile{order:-1}}
+@media (min-width:900px){.cols{grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);align-items:start}.cols .sticky{position:sticky;top:76px}}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 18px;border-radius:var(--r1);font:inherit;font-weight:600;font-size:16px;border:1px solid transparent;cursor:pointer;text-decoration:none;text-align:center;line-height:1.25;transition:background-color .15s var(--ease),border-color .15s var(--ease)}
+.btn-primary{background:var(--accent);color:var(--on-accent)}.btn-primary:hover{background:var(--accent-hover);color:var(--on-accent)}
+.btn-secondary{background:var(--surface);color:var(--ink);border-color:var(--line-strong)}.btn-secondary:hover{border-color:var(--ink-3)}
+.btn-quiet{background:transparent;color:var(--accent);padding:0 10px}
+.btn-danger{background:var(--surface);color:var(--bad);border-color:var(--line-strong)}.btn-danger:hover{background:var(--bad-soft)}
+.btn[disabled],.btn[aria-disabled="true"]{opacity:.5;cursor:not-allowed}
+.btn.block{width:100%}.btn.sm{min-height:40px;padding:0 12px;font-size:14px}
+.spin{display:inline-block;width:16px;height:16px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.actions{display:flex;gap:12px;flex-wrap:wrap}.actions>.btn{flex:1 1 180px}
+.field+.field{margin-top:16px}
+.field>label,.label{display:block;font-size:14px;font-weight:600;margin-bottom:6px}
+.req{color:var(--bad);margin-left:2px}
+.input{width:100%;min-height:44px;padding:10px 12px;font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line-strong);border-radius:var(--r1);appearance:none;-webkit-appearance:none}
+textarea.input{min-height:96px;resize:vertical;line-height:1.5}
+.input:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
+.input[aria-invalid="true"]{border-color:var(--bad)}
+.help{font-size:12.5px;color:var(--ink-3);margin-top:6px}
+.err{font-size:12.5px;color:var(--bad);margin-top:6px;font-weight:600}.err:empty{display:none}
+.seg{display:flex;flex-wrap:wrap;gap:8px}
+.chip{min-height:40px;padding:0 14px;border-radius:999px;border:1px solid var(--line-strong);background:var(--surface);color:var(--ink-2);font:inherit;font-size:14px;font-weight:600;cursor:pointer}
+.chip:hover{border-color:var(--ink-3);color:var(--ink)}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--ground)}
+.chip[disabled]{opacity:.5;cursor:not-allowed}
+.badge{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;padding:3px 9px;border-radius:999px;white-space:nowrap;background:var(--mute-soft);color:var(--mute)}
+.badge::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.badge.OPEN{background:var(--info-soft);color:var(--info)}.badge.AWAITING,.badge.GRADED{background:var(--warn-soft);color:var(--warn)}
+.badge.DISPUTED{background:var(--warn-soft);color:var(--warn)}.badge.WON{background:var(--ok-soft);color:var(--ok)}
+.dl{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px 16px;margin:0;font-size:14px}
+.dl dt{color:var(--ink-3)}.dl dd{margin:0;text-align:right;font-weight:600;min-width:0;overflow-wrap:anywhere}
+.skel{border-radius:var(--r2);background:var(--surface-2);min-height:18px;animation:pulse 1.4s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.5}}
+.empty{padding:32px 16px;text-align:center;color:var(--ink-2)}.empty h3{color:var(--ink);margin-bottom:6px}.empty .btn{margin-top:16px}
+.glyph{width:36px;height:36px;border-radius:var(--r2);display:grid;place-items:center;background:var(--accent-soft);color:var(--accent);flex:none}
+.hero{display:grid;gap:24px;grid-template-columns:minmax(0,1fr);background:var(--surface);border:1px solid var(--line);border-radius:var(--r3);padding:32px 24px;box-shadow:var(--shadow)}
+@media (min-width:900px){.hero{grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);align-items:center;padding:40px 36px}}
+@media (max-width:719px){.hero-art{display:none}.hero .actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.hero .actions .btn{padding:0 8px;font-size:15px}.core .panel{padding:16px}.section>h2{margin-bottom:8px}}
+@media (max-width:420px){.hero{padding:20px 16px;gap:16px}.hero .actions{margin-top:16px}.display{margin-top:12px}}
+@media (max-width:1023px){main>.hero{order:-2}main>.core{order:-1}main:has(>.hero){display:flex;flex-direction:column}main:has(>.hero)>.stats{margin-top:24px}}
+.live{display:inline-flex;align-items:center;gap:8px;padding:5px 12px 5px 10px;border:1px solid var(--line-strong);border-radius:999px;font-size:12.5px;color:var(--ink-2);background:var(--surface-2)}
+.live i{width:8px;height:8px;border-radius:50%;background:var(--ok)}.live b{color:var(--ink)}
+.display{font-size:clamp(26px,5vw,36px);font-weight:700;line-height:1.12;letter-spacing:-.025em;margin:16px 0 0;max-width:20ch;text-wrap:balance}
+.lede{margin-top:12px;font-size:16px;line-height:1.5;color:var(--ink-2);max-width:48ch}
+.hero .actions{margin-top:24px;max-width:460px}
+.hero-art{width:100%;max-width:420px;justify-self:center}
+.hero-art .bar{transform-box:fill-box;transform-origin:left center;animation:grow .9s var(--ease) both}
+@keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;margin:16px 0 0;border:1px solid var(--line);border-radius:var(--r3);overflow:hidden;background:var(--line);box-shadow:var(--shadow)}
+@media (min-width:720px){.stats{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.stats>div{background:var(--surface);padding:16px;min-width:0}
+.stats dt{font-size:12.5px;color:var(--ink-3);font-weight:600}
+.stats dd{margin:4px 0 0;font-size:clamp(20px,4.6vw,26px);font-weight:700;letter-spacing:-.02em;white-space:nowrap}
+.stats dd small{font-size:12.5px;font-weight:600;color:var(--ink-2);margin-left:3px}
+.stats .sub{display:block;margin-top:4px;font-size:12.5px;font-weight:600;color:var(--ok)}
+.section{margin-top:24px}.section>h2,.sechead h2{font-size:22px;margin-bottom:12px}
+@media (min-width:720px){.section{margin-top:32px}}
+.sechead{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.feed{padding:16px 16px 0}
+.feed-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:4px}
+.feed-head h2{font-size:15px;margin:0}
+.feed-head .src{font-size:12.5px;font-weight:600;color:var(--ok);display:inline-flex;align-items:center;gap:6px}
+.feed-head .src::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.feed ol{list-style:none;margin:0;padding:0}
+.feed li a{display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--line);color:var(--ink);text-decoration:none;min-height:60px}
+.feed li:first-child a{border-top:0}
+.feed li a:hover .ev-t{text-decoration:underline}
+.ev-t{display:block;font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ev-s{display:block;font-size:12.5px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ev-a{font-size:12.5px;color:var(--ink-3);white-space:nowrap}
+.feed-foot{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px;margin:8px -16px 0;padding:16px;border-top:1px solid var(--line)}
+.feed-foot b{display:block;font-size:19px;font-weight:700;letter-spacing:-.02em}.feed-foot span{display:block;font-size:12.5px;color:var(--ink-3)}
+.feed-foot .bal{grid-column:1/-1;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding-top:12px;border-top:1px dashed var(--line-strong)}
+.feed-foot .bal span{display:inline}.feed-foot .bal b{color:var(--ok);display:inline-flex;align-items:center;gap:6px}
+.feed-foot .bal.off b{color:var(--bad)}
+.roles{display:grid;gap:12px;grid-template-columns:minmax(0,1fr)}
+@media (min-width:760px){.roles{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.role{position:relative;display:grid;grid-template-columns:48px minmax(0,1fr) 20px;gap:14px;align-items:center;padding:14px 16px;border:1px solid var(--line);border-radius:var(--r3);text-decoration:none;color:var(--ink);background:var(--surface);box-shadow:var(--shadow);min-height:80px}
+.role:hover{border-color:var(--accent)}
+.role .tile{width:48px;height:48px;border-radius:var(--r2);background:var(--accent-soft);display:grid;place-items:center;color:var(--accent)}
+.role .t{display:block;font-weight:700;font-size:16px}.role .d{display:block;font-size:14px;color:var(--ink-2);margin-top:2px}
+.sentence{font-size:17px;line-height:1.5;color:var(--ink);margin:0}
+.chiprow{margin-top:12px}.chiprow .lab{display:block;font-size:12.5px;font-weight:600;color:var(--ink-3);margin-bottom:6px}
+.chiprow .grp{display:flex;flex-wrap:wrap;gap:6px}
+.testnote{font-size:12.5px;color:var(--ink-3);margin-top:8px}
+.how summary{list-style:none;display:flex;align-items:center;justify-content:space-between;min-height:48px;cursor:pointer;font-size:22px;font-weight:700}
+.how summary::-webkit-details-marker{display:none}
+.how summary::after{content:"";width:8px;height:8px;border-right:2px solid var(--ink-3);border-bottom:2px solid var(--ink-3);transform:rotate(45deg);margin-right:6px;transition:transform .2s var(--ease)}
+.how[open] summary::after{transform:rotate(-135deg)}
+.steps{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:12px;grid-template-columns:minmax(0,1fr)}
+@media (min-width:900px){.steps{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.steps li{background:var(--surface);border:1px solid var(--line);border-radius:var(--r3);padding:16px;box-shadow:var(--shadow)}
+.steps .n{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:12.5px;font-weight:700;background:var(--accent-soft);color:var(--accent);margin-bottom:10px}
+.steps p{font-size:14px;color:var(--ink-2);margin-top:4px}
+.cards{display:grid;gap:12px;grid-template-columns:minmax(0,1fr)}
+@media (min-width:640px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (min-width:1100px){.cards{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.qcard{--edge:var(--mute);position:relative;overflow:hidden;display:block;background:var(--surface);border:1px solid var(--line);border-radius:var(--r3);padding:19px 16px 16px;text-decoration:none;color:var(--ink);box-shadow:var(--shadow);min-width:0}
+.qcard::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:var(--edge)}
+.qcard:hover{border-color:var(--line-strong)}
+.qcard h3{margin:0 0 10px}.qcard .amt{margin-top:12px;font-size:19px;font-weight:700;letter-spacing:-.02em}.qcard .act{margin-top:12px;width:100%;pointer-events:none}
+.qcard.OPEN{--edge:var(--info)}.qcard.AWAITING,.qcard.GRADED{--edge:var(--warn)}.qcard.DISPUTED{--edge:var(--warn)}.qcard.WON{--edge:var(--ok)}
+.qcard h3{font-size:16px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+.qcard .meta{display:flex;justify-content:space-between;gap:8px;font-size:14px;color:var(--ink-2)}
+.plist{list-style:none;margin:0;padding:0;border:1px solid var(--line);border-radius:var(--r3);background:var(--surface);overflow:hidden;box-shadow:var(--shadow)}
+.plist li+li{border-top:1px solid var(--line)}
+.prow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px 16px;color:var(--ink);text-decoration:none;min-height:68px}
+.prow:hover{background:var(--surface-2)}
+.prow .t{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prow .s{display:block;font-size:12.5px;color:var(--ink-3)}
+.prow .e{text-align:right;display:grid;gap:4px;justify-items:end;font-size:14px}
+table.ptable{width:100%;border-collapse:separate;border-spacing:0;background:var(--surface);border:1px solid var(--line);border-radius:var(--r3);overflow:hidden;font-size:14px;box-shadow:var(--shadow)}
+.ptable th{text-align:left;font-weight:600;color:var(--ink-3);font-size:12.5px;padding:10px 16px;border-bottom:1px solid var(--line);background:var(--surface-2)}
+.ptable td{padding:12px 16px;border-bottom:1px solid var(--line);vertical-align:middle}
+.ptable tr:last-child td{border-bottom:0}
+.ptable tbody tr{cursor:pointer}.ptable tbody tr:hover td{background:var(--surface-2)}
+.ptable .r{text-align:right}
+.ptable a{color:var(--ink);font-weight:600;text-decoration:none;display:inline-block;min-height:36px;line-height:36px}
+.only-wide{display:none}
+@media (min-width:900px){table.only-wide{display:table}.only-narrow{display:none}}
+.tx{margin-top:16px;border:1px solid var(--line);border-radius:var(--r2);padding:12px 16px;font-size:14px;background:var(--surface)}
+.tx[hidden]{display:none}.tx ol{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.tx li{display:grid;grid-template-columns:18px 1fr;gap:10px;align-items:start;color:var(--ink-3)}
+.tx li .b{width:18px;height:18px;border-radius:50%;border:2px solid var(--line-strong);margin-top:2px}
+.tx li.done{color:var(--ink)}.tx li.done .b{background:var(--ok);border-color:var(--ok)}
+.tx li.now{color:var(--ink);font-weight:600}.tx li.now .b{border-color:var(--accent);border-right-color:transparent;animation:spin .9s linear infinite}
+.tx li.fail{color:var(--bad);font-weight:600}.tx li.fail .b{background:var(--bad);border-color:var(--bad)}
+.tx .msg{margin-top:12px;padding-top:12px;border-top:1px solid var(--line);color:var(--ink-2);overflow-wrap:anywhere}.tx .msg:empty{display:none}
+.tx.bad{border-color:var(--bad);background:var(--bad-soft)}.tx.good{border-color:var(--ok)}
+.timeline{list-style:none;margin:0;padding:0}
+.timeline li{position:relative;display:grid;grid-template-columns:20px 1fr;gap:12px;padding-bottom:16px}
+.timeline li:last-child{padding-bottom:0}
+.timeline li::before{content:"";position:absolute;left:9px;top:22px;bottom:0;width:2px;background:var(--line)}.timeline li:last-child::before{display:none}
+.timeline .b{width:20px;height:20px;border-radius:50%;border:2px solid var(--line-strong);background:var(--surface);margin-top:2px;z-index:1}
+.timeline li.done .b{background:var(--ok);border-color:var(--ok)}.timeline li.now .b{border-color:var(--accent)}
+.timeline small{display:block;color:var(--ink-3);font-size:12.5px}
+.crit{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.crit li{display:grid;grid-template-columns:24px minmax(0,1fr);gap:10px;font-size:14px}
+.crit .n{width:24px;height:24px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-size:12.5px;font-weight:700}
+.ans{border:1px solid var(--line);border-radius:var(--r2);padding:16px;background:var(--surface)}
+.ans.win{border-color:var(--ok);border-top-width:3px}
+.ans .body{white-space:pre-wrap;overflow-wrap:anywhere;margin-top:10px;font-size:15px}
+.ans .body a{display:inline-block;min-height:36px;line-height:36px}
+.score{font-size:24px;font-weight:700;letter-spacing:-.02em}.score small{font-size:12.5px;color:var(--ink-3);font-weight:600}
+.cbar{display:grid;grid-template-columns:minmax(0,1fr) 36px;gap:10px;align-items:center;font-size:12.5px;color:var(--ink-2);margin-top:8px}
+.cbar .track{height:6px;background:var(--surface-2);border-radius:999px;margin-top:4px}.cbar .track i{display:block;height:100%;background:var(--accent);border-radius:999px}
+.cbar b{text-align:right;color:var(--ink)}
+dialog{border:0;padding:0;background:var(--surface);color:var(--ink);border-radius:var(--r3);box-shadow:var(--shadow-pop);width:min(520px,calc(100vw - 24px));max-height:calc(100dvh - 24px)}
+dialog::backdrop{background:rgba(10,14,20,.5)}
+dialog .dlg{padding:24px;overflow:auto;max-height:calc(100dvh - 24px)}
+dialog .dlg-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px}
+dialog .x{width:44px;height:44px;margin:-10px -10px 0 0;border:0;background:transparent;color:var(--ink-2);border-radius:var(--r1);cursor:pointer;display:grid;place-items:center;flex:none}
+@media (max-width:599px){dialog{width:100vw;max-width:100vw;margin:auto 0 0;border-radius:var(--r3) var(--r3) 0 0;max-height:92dvh}dialog .dlg{padding:24px 16px calc(24px + env(safe-area-inset-bottom));max-height:92dvh}}
+dialog[open]{animation:pop .2s var(--ease)}
+@keyframes pop{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.option{display:block;width:100%;text-align:left;padding:16px;border:1px solid var(--line-strong);border-radius:var(--r2);background:var(--surface);color:var(--ink);font:inherit;cursor:pointer;min-height:44px}
+.option:hover{border-color:var(--accent)}.option b{display:block}.option span{display:block;font-size:14px;color:var(--ink-2);margin-top:2px}.option+.option{margin-top:8px}
+details.tune{margin-top:20px;border-top:1px solid var(--line)}
+details.tune>summary{list-style:none;display:flex;align-items:center;justify-content:space-between;min-height:48px;cursor:pointer;font-weight:600}
+details.tune>summary::-webkit-details-marker{display:none}
+.toasts{position:fixed;left:0;right:0;bottom:calc(var(--nav-h) + 12px + env(safe-area-inset-bottom));z-index:90;display:grid;gap:8px;justify-items:center;padding:0 16px;pointer-events:none}
+@media (min-width:1024px){.toasts{left:auto;right:24px;bottom:24px;justify-items:end}}
+.toast{pointer-events:auto;max-width:440px;background:var(--ink);color:var(--ground);padding:12px 14px;border-radius:var(--r2);box-shadow:var(--shadow-pop);font-size:14px;font-weight:500;animation:pop .2s var(--ease)}
+.toast.bad{background:var(--bad);color:#fff}
+.banner{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:10px 16px;background:var(--warn-soft);border-bottom:1px solid var(--line);font-size:14px}.banner[hidden]{display:none}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+</style>
+</head>
+<body>
+<a class="skip" href="#app">Skip to content</a>
+<header class="topbar">
+  <a class="brand" href="#/" aria-label="AnswerArena home"><span id="brandMark"></span><span>AnswerArena</span></a>
+  <span class="env" id="envBadge" hidden></span>
+  <span class="grow"></span>
+  <button class="iconbtn" id="themeBtn" type="button" aria-label="Switch theme"></button>
+  <button class="walletbtn" id="walletBtn" type="button" aria-haspopup="dialog"><span class="dot" aria-hidden="true"></span><span class="lbl" id="walletLbl">Connect wallet</span></button>
+</header>
+<div class="banner" id="netBanner" role="alert" hidden>
+  <span class="grow">Your wallet is on a different network. Transactions will fail until it uses GenLayer Studio.</span>
+  <button class="btn btn-secondary sm" type="button" id="switchNet">Switch network</button>
+</div>
+<nav class="tabs" aria-label="Main">
+  <a class="brand side-brand" href="#/" aria-label="AnswerArena home"><span id="brandMark2"></span><span>AnswerArena</span></a>
+  <ul id="tabs"></ul>
+</nav>
+<main id="app" tabindex="-1"></main>
+<footer class="foot">
+  <p class="footaddr">Contract <span id="footAddr">not set</span><button class="linkbtn" type="button" id="footCopy" hidden>Copy</button><a class="linkbtn" id="footExp" target="_blank" rel="noopener" hidden>Explorer</a> on GenLayer Studio.</p>
+  <p id="footMode"></p>
+  <p>Answers are graded by an LLM and checked by validator consensus. Grading is automated and can be disputed once. Test network only.</p>
+</footer>
+<dialog id="dlg" aria-labelledby="dlgTitle"><div class="dlg" id="dlgBody"></div></dialog>
+<div class="toasts" id="toasts" role="status" aria-live="polite"></div>
+
+<script type="module">
+import { createClient, createAccount } from "https://esm.sh/genlayer-js@latest";
+import { studionet } from "https://esm.sh/genlayer-js@latest/chains";
+
+const DEFAULT_CONTRACT_ADDRESS = "0x0000000000000000000000000000000000000000";
+const ZERO = "0x0000000000000000000000000000000000000000";
+const WEI = 1000000000000000000n;
+const $ = (id) => document.getElementById(id);
+const SVGNS = "http://www.w3.org/2000/svg";
+
+const ICONS = {
+  home: ["M3 11l9-8 9 8", "M5 10v10h14V10"],
+  ask: ["M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z", "M12 8v8M8 12h8"],
+  list: ["M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"],
+  user: ["M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z", "M4 21c0-4 3.6-7 8-7s8 3 8 7"],
+  flask: ["M9 3h6M10 3v6l-5.5 9.5A2 2 0 0 0 6.2 21h11.6a2 2 0 0 0 1.7-2.5L14 9V3", "M7.5 15h9"],
+  arrow: ["M5 12h14M13 6l6 6-6 6"], back: ["M15 6l-6 6 6 6"], x: ["M6 6l12 12M18 6L6 18"],
+  copy: ["M9 9h11v11H9z", "M5 15H4V4h11v1"], check: ["M5 12l5 5 9-10"],
+  sun: ["M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10z", "M12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"],
+  moon: ["M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"],
+  coin: ["M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z", "M14.5 9.5c-.5-1-1.5-1.5-2.5-1.5-1.4 0-2.5.8-2.5 2s1.1 1.6 2.5 2 2.5.8 2.5 2-1.1 2-2.5 2c-1 0-2-.5-2.5-1.5M12 6.5v1.5M12 16v1.5"],
+  doc: ["M7 3h8l4 4v14H7z", "M15 3v4h4M10 12h6M10 16h6"],
+  scale: ["M12 4v16M6 20h12", "M5 8h14", "M5 8l-3 7a3 3 0 0 0 6 0zM19 8l-3 7a3 3 0 0 0 6 0z"],
+  clock: ["M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z", "M12 7v5l3 2"],
+  gavel: ["M14 4l6 6-3 3-6-6zM9 9l6 6M4 20l7-7"],
+};
+function icon(name, size) {
+  const svg = document.createElementNS(SVGNS, "svg");
+  svg.setAttribute("viewBox", "0 0 24 24"); svg.setAttribute("class", "ic"); svg.setAttribute("aria-hidden", "true");
+  if (size) { svg.style.width = size + "px"; svg.style.height = size + "px"; }
+  for (const d of ICONS[name] || []) { const p = document.createElementNS(SVGNS, "path"); p.setAttribute("d", d); svg.appendChild(p); }
+  return svg;
+}
+function svgEl(tag, attrs, ...kids) {
+  const el = document.createElementNS(SVGNS, tag);
+  for (const [k, v] of Object.entries(attrs || {})) el.setAttribute(k, v);
+  kids.forEach((k) => el.appendChild(k));
+  return el;
+}
+function markSvg() {
+  return svgEl("svg", { viewBox: "0 0 28 28", class: "mark", "aria-hidden": "true" },
+    svgEl("rect", { width: "28", height: "28", rx: "7", fill: "var(--accent)" }),
+    svgEl("path", { d: "M7 20l7-12 7 12", fill: "none", stroke: "var(--on-accent)", "stroke-width": "2.2", "stroke-linecap": "round", "stroke-linejoin": "round" }),
+    svgEl("path", { d: "M10.5 16.5h7", stroke: "var(--on-accent)", "stroke-width": "2.2", "stroke-linecap": "round" }));
+}
+function heroArt() {
+  const bars = [[96, 150], [128, 110], [160, 170], [192, 90]];
+  const kids = [
+    svgEl("rect", { x: "20", y: "20", width: "300", height: "220", rx: "14", fill: "var(--surface-2)", stroke: "var(--line-strong)", "stroke-width": "1.5" }),
+    svgEl("rect", { x: "40", y: "40", width: "150", height: "10", rx: "5", fill: "var(--ink-3)", opacity: ".5" }),
+    svgEl("rect", { x: "40", y: "58", width: "100", height: "8", rx: "4", fill: "var(--ink-3)", opacity: ".3" }),
+    svgEl("circle", { cx: "280", cy: "52", r: "22", fill: "var(--accent-soft)", stroke: "var(--accent)", "stroke-width": "2" }),
+    svgEl("path", { d: "M270 52l7 7 13-14", fill: "none", stroke: "var(--accent)", "stroke-width": "3", "stroke-linecap": "round", "stroke-linejoin": "round" }),
+  ];
+  bars.forEach(([y, w], i) => {
+    kids.push(
+      svgEl("circle", { cx: "50", cy: String(y + 6), r: "8", fill: "var(--accent-soft)", stroke: "var(--accent)", "stroke-width": "1.5" }),
+      svgEl("rect", { x: "70", y: String(y - 6), width: "130", height: "7", rx: "3.5", fill: "var(--ink-3)", opacity: ".35" }),
+      svgEl("rect", { x: "70", y: String(y + 6), width: "230", height: "8", rx: "4", fill: "var(--line)" }),
+      svgEl("rect", { x: "70", y: String(y + 6), width: String(w + 40), height: "8", rx: "4", fill: "var(--accent)", class: "bar", style: `animation-delay:${0.15 * i}s` }));
+  });
+  kids.push(svgEl("rect", { x: "40", y: "214", width: "90", height: "10", rx: "5", fill: "var(--ink-3)", opacity: ".25" }));
+  return svgEl("svg", { viewBox: "0 0 340 260", class: "hero-art", "aria-hidden": "true" }, ...kids);
+}
+function h(tag, props, ...kids) {
+  const el = document.createElement(tag);
+  for (const [k, v] of Object.entries(props || {})) {
+    if (v === undefined || v === null || v === false) continue;
+    if (k === "class") el.className = v;
+    else if (k === "text") el.textContent = v;
+    else if (k === "style") el.style.cssText = v;
+    else if (k.startsWith("on")) el.addEventListener(k.slice(2), v);
+    else el.setAttribute(k, v === true ? "" : v);
+  }
+  for (const kid of kids.flat(3)) {
+    if (kid === null || kid === undefined || kid === false) continue;
+    el.appendChild(typeof kid === "string" || typeof kid === "number" ? document.createTextNode(String(kid)) : kid);
+  }
+  return el;
+}
+const clear = (el) => { while (el.firstChild) el.removeChild(el.firstChild); return el; };
+const put = (el, ...kids) => { clear(el); for (const k of kids.flat(3)) if (k !== null && k !== undefined && k !== false) el.append(k); return el; };
+const short = (a) => (a ? a.slice(0, 6) + "…" + a.slice(-4) : "-");
+const same = (a, b) => !!a && !!b && String(a).toLowerCase() === String(b).toLowerCase();
+const skel = (px, n = 1) => h("div", { class: "stack" }, Array.from({ length: n }, () => h("div", { class: "skel", style: `height:${px}px` })));
+function toast(text, bad) {
+  const t = h("div", { class: "toast" + (bad ? " bad" : ""), text });
+  $("toasts").appendChild(t); setTimeout(() => t.remove(), 4500);
+}
+async function copyText(text) {
+  try { await navigator.clipboard.writeText(text); toast("Copied"); } catch (e) { toast("Copying is not available in this browser", true); }
+}
+
+/* ---------- numbers, GEN and time ---------- */
+function genToWei(s) {
+  const t = String(s).trim();
+  if (!/^\d+(\.\d{1,18})?$/.test(t)) return null;
+  const [w, f = ""] = t.split(".");
+  return BigInt(w) * WEI + BigInt(f.padEnd(18, "0") || "0");
+}
+function genStr(w, dp = 2) {
+  let wei; try { wei = BigInt(w); } catch (e) { return String(w); }
+  const neg = wei < 0n; if (neg) wei = -wei;
+  const frac = (wei % WEI).toString().padStart(18, "0").slice(0, dp).replace(/0+$/, "");
+  return (neg ? "-" : "") + (wei / WEI).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + (frac ? "." + frac : "");
+}
+const nowSec = () => Math.floor(Date.now() / 1000);
+const fmtEpoch = (e) => { try { return new Date(Number(e) * 1000).toLocaleString(undefined, { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }); } catch (x) { return String(e); } };
+function timeAgo(epoch) {
+  const d = nowSec() - Number(epoch);
+  if (!Number(epoch)) return "";
+  if (d < 60) return "just now";
+  if (d < 3600) return Math.floor(d / 60) + "m ago";
+  if (d < 86400) return Math.floor(d / 3600) + "h ago";
+  if (d < 86400 * 30) return Math.floor(d / 86400) + "d ago";
+  return new Date(Number(epoch) * 1000).toLocaleDateString(undefined, { day: "numeric", month: "short" });
+}
+function dur(sec) {
+  sec = Math.max(0, Math.floor(sec));
+  const d = Math.floor(sec / 86400), hh = Math.floor((sec % 86400) / 3600), mm = Math.floor((sec % 3600) / 60), ss = sec % 60;
+  if (d > 0) return `${d}d ${hh}h`;
+  if (hh > 0) return `${hh}h ${mm}m`;
+  if (mm > 0) return `${mm}m ${ss}s`;
+  return `${ss}s`;
+}
+const fmtMinutes = (m) => (m < 60 ? `${m} min` : m < 1440 ? `${m / 60} h` : `${m / 1440} d`);
+
+/* ---------- contract address ---------- */
+const okAddr = (v) => /^0x[0-9a-fA-F]{40}$/.test(String(v || ""));
+function resolveContract() {
+  try {
+    const q = new URLSearchParams(location.search).get("contract");
+    if (okAddr(q)) { try { localStorage.setItem("answerarena.contract", q); } catch (e) {} return q; }
+  } catch (e) {}
+  try { const s = localStorage.getItem("answerarena.contract"); if (okAddr(s)) return s; } catch (e) {}
+  return DEFAULT_CONTRACT_ADDRESS;
+}
+const CONTRACT_ADDRESS = resolveContract();
+const hasContract = CONTRACT_ADDRESS !== ZERO;
+$("footAddr").textContent = hasContract ? short(CONTRACT_ADDRESS) : "not set";
+if (hasContract) {
+  $("footAddr").title = CONTRACT_ADDRESS;
+  $("footCopy").hidden = false; $("footCopy").addEventListener("click", () => copyText(CONTRACT_ADDRESS));
+  $("footExp").hidden = false; $("footExp").href = "https://explorer-studio.genlayer.com/address/" + CONTRACT_ADDRESS;
+}
+$("brandMark").appendChild(markSvg()); $("brandMark2").appendChild(markSvg());
+
+/* ---------- wallet and network ---------- */
+const readClient = createClient({ chain: studionet });
+let client = null, account = null, usingInjected = false, walletKind = "";
+const net = { ok: true };
+const RPC_URL = studionet.rpcUrls?.default?.http?.[0];
+const hexChainId = () => "0x" + Number(studionet.id).toString(16);
+async function checkChain() {
+  if (!usingInjected || !window.ethereum) { net.ok = true; drawNet(); return true; }
+  try { net.ok = String(await window.ethereum.request({ method: "eth_chainId" })).toLowerCase() === hexChainId().toLowerCase(); } catch (e) { net.ok = true; }
+  drawNet(); return net.ok;
+}
+async function switchChain() {
+  try { await window.ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId: hexChainId() }] }); }
+  catch (e) {
+    if (e?.code === 4001) throw e;
+    await window.ethereum.request({ method: "wallet_addEthereumChain", params: [{ chainId: hexChainId(), chainName: studionet.name || "GenLayer Studio",
+      nativeCurrency: studionet.nativeCurrency || { name: "GEN", symbol: "GEN", decimals: 18 }, rpcUrls: studionet.rpcUrls?.default?.http || [] }] });
+  }
+  return checkChain();
+}
+function drawNet() { $("netBanner").hidden = net.ok || !account; drawWallet(); }
+$("switchNet").addEventListener("click", async () => { try { if (await switchChain()) toast("Switched to GenLayer Studio"); } catch (e) { toast(explain(e), true); } });
+if (window.ethereum?.on) {
+  window.ethereum.on("chainChanged", () => checkChain());
+  window.ethereum.on("accountsChanged", (accs) => {
+    if (!usingInjected) return;
+    if (!accs || !accs.length) return disconnect();
+    account = accs[0]; client = createClient({ chain: studionet, account }); toast("Wallet account changed"); route();
+  });
+}
+function drawWallet() {
+  const btn = $("walletBtn");
+  btn.classList.toggle("on", !!account && net.ok); btn.classList.toggle("warn", !!account && !net.ok);
+  const narrow = window.matchMedia && window.matchMedia("(max-width: 419px)").matches;
+  $("walletLbl").textContent = account ? (narrow ? account.slice(0, 4) + "…" + account.slice(-4) : short(account)) : narrow ? "Connect" : "Connect wallet";
+  btn.title = account || "";
+  btn.setAttribute("aria-label", account ? "Wallet " + account + ", open wallet menu" : "Connect wallet");
+}
+async function rpc(method, params) {
+  const res = await fetch(RPC_URL, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }) });
+  return res.json();
+}
+async function balanceOf(addr) {
+  if (!RPC_URL || !addr) return null;
+  try { const b = await rpc("eth_getBalance", [addr, "latest"]); return b && typeof b.result === "string" ? BigInt(b.result) : null; } catch (e) { return null; }
+}
+const TEST_KEY_SLOT = "answerarena.testsession";
+const readSlot = (k) => { try { return sessionStorage.getItem(k) || ""; } catch (e) { return ""; } };
+const writeSlot = (k, v) => { try { if (v) sessionStorage.setItem(k, v); else sessionStorage.removeItem(k); } catch (e) {} };
+const readTestKey = () => { const v = readSlot(TEST_KEY_SLOT); return /^0x[0-9a-f]{64}$/.test(v) ? v : ""; };
+const writeTestKey = (v) => writeSlot(TEST_KEY_SLOT, v);
+function randomKey() { const b = new Uint8Array(32); crypto.getRandomValues(b); return "0x" + Array.from(b, (x) => x.toString(16).padStart(2, "0")).join(""); }
+function useLocalAccount(pk, kind) {
+  const acct = createAccount(pk);
+  account = acct.address; usingInjected = false; walletKind = kind;
+  client = createClient({ chain: studionet, account: acct }); net.ok = true; drawNet();
+}
+function startTestSession(silent) {
+  let pk = readTestKey();
+  if (!pk) { pk = randomKey(); writeTestKey(pk); }
+  useLocalAccount(pk, "test");
+  if (!silent) { closeDialog(); toast("Test session started. Get test GEN before sending value."); route(); }
+}
+async function connectInjected(errEl) {
+  if (!window.ethereum) { errEl.textContent = "No browser wallet was found. Open this page inside your wallet app's browser, or start a test session."; return; }
+  try {
+    const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+    account = accounts[0]; usingInjected = true; walletKind = "injected";
+    client = createClient({ chain: studionet, account }); writeTestKey("");
+    if (!(await checkChain())) { try { await switchChain(); } catch (e) {} }
+    closeDialog(); toast("Wallet connected"); route();
+  } catch (e) { errEl.textContent = explain(e); }
+}
+function connectKey(input, errEl) {
+  let pk = input.value.trim();
+  if (/^[0-9a-fA-F]{64}$/.test(pk)) pk = "0x" + pk;
+  if (!/^0x[0-9a-fA-F]{64}$/.test(pk)) { input.setAttribute("aria-invalid", "true"); errEl.textContent = "A private key is 64 hexadecimal characters, optionally starting with 0x."; input.focus(); return; }
+  try { useLocalAccount(pk, "key"); writeTestKey(""); closeDialog(); toast("Account connected"); route(); }
+  catch (e) { errEl.textContent = "This key could not be used: " + explain(e); }
+}
+function disconnect() { writeTestKey(""); client = null; account = null; usingInjected = false; walletKind = ""; net.ok = true; drawNet(); closeDialog(); toast("Disconnected"); route(); }
+
+/* ---------- dialogs ---------- */
+const dlg = $("dlg");
+let dlgResolve = null, dlgReturnFocus = null;
+function openDialog(title, ...content) {
+  if (!dlg.open) dlgReturnFocus = document.activeElement;
+  put($("dlgBody"), h("div", { class: "dlg-head" }, h("h2", { id: "dlgTitle", text: title }),
+    h("button", { class: "x", type: "button", "aria-label": "Close", onclick: () => closeDialog(false) }, icon("x"))), ...content);
+  if (!dlg.open) dlg.showModal();
+}
+function settle(v) { if (dlgResolve) { const r = dlgResolve; dlgResolve = null; r(!!v); } }
+function closeDialog(v) { settle(v); if (dlg.open) dlg.close(); }
+dlg.addEventListener("close", () => { settle(false); if (dlgReturnFocus && document.contains(dlgReturnFocus)) dlgReturnFocus.focus(); dlgReturnFocus = null; });
+dlg.addEventListener("click", (e) => { if (e.target === dlg) closeDialog(false); });
+function confirmAction({ title, intro, rows = [], note, confirm, danger }) {
+  return new Promise((resolve) => {
+    openDialog(title, intro ? h("p", { class: "muted", text: intro }) : null,
+      rows.length ? h("dl", { class: "dl", style: "margin-top:16px" }, rows.map(([k, v]) => [h("dt", { text: k }), h("dd", { class: "num", text: v })])) : null,
+      note ? h("p", { class: "callout small", style: "margin-top:16px", text: note }) : null,
+      h("p", { class: "testnote", text: "Test network: GEN here has no real value." }),
+      h("div", { class: "actions", style: "margin-top:16px" },
+        h("button", { class: "btn btn-secondary", type: "button", text: "Go back", onclick: () => closeDialog(false) }),
+        h("button", { class: "btn " + (danger ? "btn-danger" : "btn-primary"), type: "button", id: "dlgConfirm", text: confirm, onclick: () => closeDialog(true) })));
+    dlgResolve = resolve; setTimeout(() => $("dlgConfirm")?.focus(), 30);
+  });
+}
+async function openWallet() {
+  const err = h("p", { class: "err", role: "alert" });
+  const pk = h("input", { class: "input", id: "pkIn", type: "password", placeholder: "0x followed by 64 characters", autocapitalize: "off", autocomplete: "off", spellcheck: "false" });
+  const addrIn = h("input", { class: "input", id: "addrIn", value: hasContract ? CONTRACT_ADDRESS : "", placeholder: "0x followed by 40 characters", autocapitalize: "off", autocomplete: "off", spellcheck: "false" });
+  const addrErr = h("p", { class: "err", role: "alert" });
+  const bal = h("span", { class: "num", text: "…" });
+  const connected = account ? h("div", { class: "inset stack" },
+    h("div", { class: "row between wrap" }, h("span", { class: "small muted", text: walletKind === "test" ? "Test session" : walletKind === "key" ? "Private key account" : "Browser wallet" }), h("span", { class: "small" }, "Balance ", bal, " GEN")),
+    h("p", { class: "addr small", text: account }),
+    h("div", { class: "actions" },
+      h("button", { class: "btn btn-secondary sm", type: "button", onclick: () => copyText(account) }, icon("copy", 16), "Copy address"),
+      h("button", { class: "btn btn-danger sm", type: "button", text: "Disconnect", onclick: disconnect }))) : null;
+  openDialog(account ? "Wallet" : "Connect a wallet", connected,
+    h("div", { style: account ? "margin-top:24px" : null }, h("h3", { text: account ? "Switch account" : "Choose how to sign" }),
+      h("div", { style: "margin-top:12px" },
+        h("button", { class: "option", type: "button", onclick: () => connectInjected(err) }, h("b", { text: "Browser wallet" }), h("span", { text: "MetaMask, Rabby or any injected wallet. On a phone, open this page in your wallet app's browser." })),
+        h("button", { class: "option", type: "button", onclick: () => startTestSession(false) }, h("b", { text: "Test session" }), h("span", { text: "A throwaway account that lives in this tab. The fastest way to try everything on Studio." })))),
+    h("details", { class: "tune" }, h("summary", { text: "Use a Studio private key" }),
+      h("div", { style: "padding-bottom:8px" }, h("div", { class: "field" }, h("label", { for: "pkIn", text: "Private key" }), pk, h("p", { class: "help", text: "Testnet keys only. The key stays in this tab and only signs your transactions." })),
+        h("button", { class: "btn btn-secondary block", type: "button", style: "margin-top:12px", text: "Use this key", onclick: () => connectKey(pk, err) }))),
+    err,
+    isSandbox() ? h("a", { class: "btn btn-secondary block", href: "#/lab", style: "margin-top:16px", text: "Open the guided Lab", onclick: () => closeDialog(false) }) : null,
+    h("details", { class: "tune", open: !hasContract }, h("summary", { text: "Contract address" }),
+      h("div", { style: "padding-bottom:8px" }, h("div", { class: "field" }, h("label", { for: "addrIn", text: "AnswerArena contract" }), addrIn,
+        h("p", { class: "help", text: "The address of a deployed AnswerArena contract. It is remembered in this browser, or pass ?contract=0x... in the link." }), addrErr),
+        h("button", { class: "btn btn-secondary block", type: "button", style: "margin-top:12px", text: "Use this contract", onclick: () => {
+          const v = addrIn.value.trim();
+          if (!okAddr(v)) { addrIn.setAttribute("aria-invalid", "true"); addrErr.textContent = "Enter a 0x address with 40 hexadecimal characters."; addrIn.focus(); return; }
+          try { localStorage.setItem("answerarena.contract", v); } catch (e) {}
+          location.search = "?contract=" + v;
+        } }))));
+  if (account) { const b = await balanceOf(account); bal.textContent = b === null ? "unknown" : genStr(b, 2); }
+}
+$("walletBtn").addEventListener("click", openWallet);
+const effectiveLight = () => { const t = document.documentElement.dataset.theme; return t ? t === "light" : !(window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches); };
+function drawTheme() {
+  const light = effectiveLight();
+  put($("themeBtn"), icon(light ? "moon" : "sun", 18));
+  $("themeBtn").setAttribute("aria-label", light ? "Switch to dark theme" : "Switch to light theme");
+  $("themeColor").setAttribute("content", light ? "#ECEFF3" : "#0C0F14");
+}
+$("themeBtn").addEventListener("click", () => {
+  const next = effectiveLight() ? "dark" : "light";
+  document.documentElement.dataset.theme = next;
+  try { localStorage.setItem("answerarena.theme", next); } catch (e) {}
+  drawTheme();
+});
+if (window.matchMedia) matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", drawTheme);
+drawTheme();
+
+/* ---------- contract calls and transaction progress ---------- */
+function unwrap(receipt) {
+  let v = receipt?.consensus_data?.leader_receipt?.[0]?.result?.payload?.readable;
+  if (v === undefined) return null;
+  for (let i = 0; i < 3; i++) {
+    if (typeof v !== "string") break;
+    const t = v.trim();
+    if (!(t.startsWith("{") || t.startsWith("[") || t.startsWith('"'))) break;
+    try { v = JSON.parse(v); } catch (e) { break; }
+  }
+  return v;
+}
+const read = (functionName, args = []) => readClient.readContract({ address: CONTRACT_ADDRESS, functionName, args });
+async function readJson(functionName, args = []) { const raw = await read(functionName, args); return typeof raw === "string" ? JSON.parse(raw) : raw; }
+function explain(e) {
+  const m = String(e?.shortMessage || e?.details || e?.message || e || "");
+  if (e?.code === 4001 || /user rejected|user denied|rejected the request|denied transaction/i.test(m)) return "You declined the request in your wallet. Nothing was sent.";
+  if (/insufficient funds|insufficient balance/i.test(m)) return "This account does not have enough GEN for this transaction.";
+  if (/failed to fetch|networkerror|network error|timeout|timed out|ECONN|load failed/i.test(m)) return "GenLayer Studio could not be reached. Check your connection and try again.";
+  return m.length > 320 ? m.slice(0, 320) + "…" : m || "Unknown error";
+}
+const busy = new Set();
+function txPanel() {
+  const steps = [["sign", "Waiting for your signature"], ["sent", "Submitted to the network"], ["accepted", "Accepted by validators"], ["final", "Finalized"]];
+  const items = steps.map(([k, t]) => h("li", { "data-k": k }, h("span", { class: "b", "aria-hidden": "true" }), h("span", { text: t })));
+  const msg = h("div", { class: "msg" });
+  const el = h("div", { class: "tx", role: "status", "aria-live": "polite", hidden: true }, h("ol", {}, items), msg);
+  return {
+    el,
+    reset() { el.hidden = true; el.classList.remove("bad", "good"); items.forEach((li) => (li.className = "")); clear(msg); },
+    at(key, text) {
+      el.hidden = false; el.classList.remove("bad"); let reached = false;
+      for (const li of items) { if (li.dataset.k === key) { li.className = "now"; reached = true; } else li.className = reached ? "" : "done"; }
+      if (text !== undefined) put(msg, text);
+    },
+    accepted(text) { items.forEach((li) => (li.className = li.dataset.k === "final" ? "now" : "done")); el.classList.add("good"); if (text !== undefined) put(msg, text); },
+    final(text) { items.forEach((li) => (li.className = "done")); put(msg, text === undefined ? "Finalized. This result is now permanent." : text); },
+    fail(text, hint, action) {
+      el.hidden = false; el.classList.add("bad");
+      (items.find((li) => li.className === "now") || items[0]).className = "fail";
+      put(msg, h("b", { text }), hint ? h("div", { style: "margin-top:4px", text: hint }) : null, action ? h("div", { style: "margin-top:10px" }, action) : null);
+    },
+    note(text) { el.hidden = false; put(msg, text); },
+  };
+}
+const mainSigner = () => (client ? { client, address: account, injected: usingInjected } : null);
+function needClient() { if (client) return true; toast("Connect a wallet to continue", true); openWallet(); return false; }
+async function write(ui, label, functionName, args, valueWei, signer) {
+  const s = signer || mainSigner();
+  if (!s) { needClient(); return null; }
+  const key = s.address + functionName + ":" + JSON.stringify(args, (k, v) => (typeof v === "bigint" ? v.toString() : v));
+  if (busy.has(key)) return null;
+  busy.add(key); ui.reset();
+  try {
+    if (s.injected && !(await checkChain())) {
+      const btn = h("button", { class: "btn btn-secondary sm", type: "button", text: "Switch to GenLayer Studio", onclick: async () => { try { await switchChain(); toast("Switched. Try again."); } catch (e) { toast(explain(e), true); } } });
+      ui.at("sign"); ui.fail("Your wallet is on another network.", "Switch to GenLayer Studio, then send this again.", btn); return null;
+    }
+    const value = valueWei ?? 0n;
+    if (value > 0n) {
+      const bal = await balanceOf(s.address);
+      if (bal !== null && bal < value) {
+        ui.at("sign");
+        ui.fail(`Not enough GEN: this needs ${genStr(value, 4)} GEN and the account holds ${genStr(bal, 4)} GEN.`, isSandbox() ? "Use “Request 100 test GEN” on the Mine or Lab page, then try again." : "Top up the account and try again.");
+        return null;
+      }
+    }
+    ui.at("sign", s.injected ? `Confirm ${label} in your wallet.` : `Signing ${label}…`);
+    const slow = setTimeout(() => ui.note("Still waiting for the wallet. Open your wallet app and look for a pending request."), 20000);
+    let hash;
+    try { hash = await s.client.writeContract({ address: CONTRACT_ADDRESS, functionName, args, value }); } finally { clearTimeout(slow); }
+    ui.at("sent", h("span", {}, "Transaction ", h("span", { class: "addr", text: short(hash) }), " is with the validators. Grading reads every answer, so it can take a minute or two."));
+    const receipt = await s.client.waitForTransactionReceipt({ hash, status: "ACCEPTED", interval: 3000, retries: 120 });
+    const result = unwrap(receipt);
+    const lr = receipt?.consensus_data?.leader_receipt?.[0];
+    if (lr?.execution_result === "ERROR") {
+      ui.at("accepted"); ui.fail("The contract refused this call.", typeof result === "string" && result ? result.slice(0, 400) : "No reason was returned."); return null;
+    }
+    if (result && typeof result === "object" && result.rejected) {
+      ui.at("accepted"); ui.fail("Refused: " + result.rejected, `The ${genStr(result.refunded_wei, 4)} GEN you sent was credited to your balance. Withdraw it on the Mine page.`); return null;
+    }
+    ui.accepted("Accepted by validators. Waiting for finalization; the result already counts.");
+    s.client.waitForTransactionReceipt({ hash, status: "FINALIZED", interval: 5000, retries: 120 }).then(() => ui.final()).catch(() => ui.note("Accepted. Finalization is taking longer than usual; the result stands."));
+    return result === null ? true : result;
+  } catch (e) { ui.fail(explain(e)); return null; } finally { busy.delete(key); }
+}
+async function runButton(btn, fn) {
+  if (!btn || btn.disabled) return;
+  const label = btn.textContent;
+  btn.disabled = true; btn.setAttribute("aria-busy", "true"); put(btn, h("span", { class: "spin", "aria-hidden": "true" }), label);
+  try { return await fn(); } finally { if (document.contains(btn)) { btn.disabled = false; btn.removeAttribute("aria-busy"); btn.textContent = label; } }
+}
+async function fundAddress(addr) {
+  if (!RPC_URL) throw new Error("No Studio RPC address is configured.");
+  const before = await balanceOf(addr);
+  const body = await rpc("sim_fundAccount", [addr, Number(100n * WEI)]);
+  if (body.error) throw new Error("Studio refused the request: " + (body.error.message || JSON.stringify(body.error)));
+  for (let i = 0; i < 8; i++) {
+    await new Promise((r) => setTimeout(r, 1500));
+    const after = await balanceOf(addr);
+    if (after !== null && before !== null && after > before) return after;
+  }
+  return null;
+}
+function fundCard(note) {
+  const out = h("p", { class: "small", role: "status", "aria-live": "polite", style: "margin-top:8px" });
+  return h("section", { class: "panel", "aria-labelledby": "fundT" }, h("h2", { id: "fundT", text: "Test GEN" }),
+    h("p", { class: "muted small", style: "margin:4px 0 12px", text: note || "The Studio simulator can credit test GEN to your connected account. This only works on Studio." }),
+    h("button", { class: "btn btn-secondary block", type: "button", text: "Request 100 test GEN", onclick: (ev) => runButton(ev.currentTarget, async () => {
+      if (!needClient()) return;
+      try { out.className = "small muted"; out.textContent = "Requesting…"; const after = await fundAddress(account);
+        if (after === null) out.textContent = "Requested. The balance has not updated yet; check again in a moment."; else { out.className = "small"; out.textContent = `Balance is now ${genStr(after, 2)} GEN.`; }
+      } catch (e) { out.className = "err"; out.textContent = explain(e); }
+    }) }), out);
+}
+
+/* ---------- shared state and views ---------- */
+const state = { cfg: null, bootError: "" };
+async function boot() {
+  if (!hasContract) return;
+  try {
+    state.cfg = await readJson("get_config"); state.bootError = "";
+    const b = $("envBadge"); b.hidden = false; b.textContent = state.cfg.mode === "sandbox" ? "Sandbox" : "Production";
+    $("footMode").textContent = state.cfg.mode === "sandbox" ? "Sandbox contract: windows start at one minute so a whole bounty settles in minutes." : "Production contract.";
+  } catch (e) { state.bootError = explain(e); }
+}
+const isSandbox = () => state.cfg?.mode === "sandbox";
+function gate(root) {
+  if (!hasContract) {
+    put(root, h("div", { class: "panel stack", style: "max-width:62ch" }, h("h1", { text: "Connect AnswerArena to a contract" }),
+      h("p", { class: "muted", text: "This page reads and writes a deployed AnswerArena contract on GenLayer Studio. Add its address to begin. Browsing needs nothing else; a wallet is only needed to ask, answer or settle." }),
+      h("button", { class: "btn btn-primary", type: "button", text: "Add contract address", onclick: openWallet })));
+    return true;
+  }
+  if (state.bootError) {
+    put(root, h("div", { class: "panel stack", style: "max-width:62ch", role: "alert" }, h("h1", { text: "The contract could not be reached" }), h("p", { class: "muted", text: state.bootError }),
+      h("div", { class: "actions" }, h("button", { class: "btn btn-primary", type: "button", text: "Try again", onclick: async () => { state.bootError = ""; await boot(); route(); } }), h("button", { class: "btn btn-secondary", type: "button", text: "Change contract", onclick: openWallet }))));
+    return true;
+  }
+  return false;
+}
+function connectPrompt(text) {
+  return h("div", { class: "inset stack" }, h("p", { class: "small", text }), h("button", { class: "btn btn-primary block", type: "button", text: "Connect wallet", onclick: openWallet }));
+}
+const LABELS = { OPEN: "Open for answers", AWAITING: "Ready to grade", GRADED: "Dispute window", DISPUTED: "Under review", WON: "Paid out", REFUNDED: "Refunded", CANCELLED: "Cancelled", VOID: "Voided, refunded" };
+function statusKey(q) {
+  if (q.status === "SETTLED") return q.outcome === "WON" ? "WON" : "REFUNDED";
+  if (q.status === "OPEN" && nowSec() >= Number(q.deadline_epoch)) return "AWAITING";
+  return q.status;
+}
+const badge = (q) => { const k = statusKey(q); return h("span", { class: "badge " + k, text: LABELS[k] }); };
+function closesText(q) {
+  const k = statusKey(q);
+  if (k === "OPEN") return "Closes in " + dur(Number(q.deadline_epoch) - nowSec());
+  if (k === "AWAITING") return "Closed " + timeAgo(q.deadline_epoch);
+  if (k === "GRADED") return "Dispute window ends in " + dur(Number(q.dispute_deadline_epoch) - nowSec());
+  if (k === "DISPUTED") return "Review pending, disputed " + timeAgo(q.dispute?.epoch || q.graded_epoch);
+  return "Settled " + timeAgo(q.settled_epoch || q.graded_epoch || q.deadline_epoch);
+}
+function chipGroup(options, get, set) {
+  const wrap = h("span", { class: "grp", role: "group" });
+  const draw = () => put(wrap, options.map(([value, text]) => h("button", { class: "chip", type: "button", text, "aria-pressed": String(get() === value), onclick: () => { set(value); draw(); } })));
+  draw(); return wrap;
+}
+
+/* ---------- drafts (shared by Home and Ask) ---------- */
+const draft = { title: "", details: "", criteria: ["", ""], bounty: 10, minutes: null, min: 50 };
+function windowOptions() {
+  const lo = Math.ceil(Number(state.cfg.min_window_seconds) / 60), hi = Math.floor(Number(state.cfg.max_window_seconds) / 60);
+  const list = isSandbox() ? [1, 5, 15, 60, 1440] : [60, 360, 1440, 4320, 10080];
+  return list.filter((m) => m >= lo && m <= hi);
+}
+function initDraft() { const w = windowOptions(); if (!draft.minutes || !w.includes(draft.minutes)) draft.minutes = w.includes(1440) && !isSandbox() ? 1440 : w[Math.min(1, w.length - 1)]; }
+
+/* =====================================================================
+   HOME
+   ===================================================================== */
+const EVENT = {
+  POSTED: (e) => ["Question posted: " + e.title, `${genStr(e.amount)} GEN bounty locked`, "ask", ""],
+  ANSWERED: (e) => ["Answer submitted: " + e.title, `${genStr(e.amount)} GEN fee added to the bounty`, "doc", ""],
+  GRADED: (e) => ["Graded: " + e.title, e.detail || "Scores recorded", "scale", ""],
+  PAID: (e) => ["Winner paid " + genStr(e.amount) + " GEN", e.title, "coin", ""],
+  REFUNDED: (e) => ["Bounty returned: " + e.title, `${genStr(e.amount)} GEN back to the asker`, "back", ""],
+  DISPUTED: (e) => ["Result disputed: " + e.title, `${genStr(e.amount)} GEN bond posted`, "gavel", ""],
+  DISPUTE_UPHELD: (e) => ["Dispute upheld: " + e.title, "Bond returned to the asker", "gavel", ""],
+  DISPUTE_REJECTED: (e) => ["Dispute rejected: " + e.title, "Bond went to the winner", "gavel", ""],
+  DISPUTE_LAPSED: (e) => ["Review lapsed: " + e.title, "Original result applied", "gavel", ""],
+  CANCELLED: (e) => ["Cancelled: " + e.title, `${genStr(e.amount)} GEN returned`, "x", ""],
+  VOIDED: (e) => ["Voided: " + e.title, "Everyone was refunded", "x", ""],
+};
+const testNote = () => h("p", { class: "testnote", text: "Test network: GEN here has no real value." });
+function qCard(q) {
+  const k = statusKey(q);
+  return h("a", { class: "qcard " + k, href: "#/q/" + q.id }, h("h3", { text: q.title }), badge(q),
+    h("p", { class: "amt num", text: genStr(q.pot) + " GEN" }),
+    h("p", { class: "xs", style: "margin-top:4px", text: `${q.answer_count} ${q.answer_count === 1 ? "answer" : "answers"} · ${closesText(q)}` }),
+    h("span", { class: "btn btn-secondary sm act", "aria-hidden": "true", text: k === "OPEN" ? "Answer this question" : k === "AWAITING" ? "Run grading" : "View question" }));
+}
+function qCollection(items) {
+  return [
+    h("ul", { class: "plist only-narrow" }, items.map((q) => h("li", {}, h("a", { class: "prow", href: "#/q/" + q.id },
+      h("span", { style: "min-width:0" }, h("span", { class: "t", text: q.title }), h("span", { class: "s", text: `${q.answer_count} ${q.answer_count === 1 ? "answer" : "answers"} · ${closesText(q)}` })),
+      h("span", { class: "e" }, h("b", { class: "num", text: genStr(q.pot) + " GEN" }), badge(q)))))),
+    h("table", { class: "ptable only-wide" },
+      h("thead", {}, h("tr", {}, ["Question", "Pot", "Answers", "Status", "Timing"].map((t, i) => h("th", { class: i === 1 || i === 2 ? "r" : "", text: t })))),
+      h("tbody", {}, items.map((q) => h("tr", { onclick: () => (location.hash = "#/q/" + q.id) },
+        h("td", {}, h("a", { href: "#/q/" + q.id, text: q.title })), h("td", { class: "r num", text: genStr(q.pot) + " GEN" }),
+        h("td", { class: "r num", text: String(q.answer_count) }), h("td", {}, badge(q)), h("td", { class: "muted", text: closesText(q) }))))),
+  ];
+}
+async function viewHome(root) {
+  if (gate(root)) return;
+  initDraft();
+  const live = h("span", { class: "live" }, h("i", { "aria-hidden": "true" }), h("span", { text: "Reading the contract…" }));
+  const stats = h("dl", { class: "stats", "aria-busy": "true" }, Array.from({ length: 4 }, () => h("div", {}, h("div", { class: "skel", style: "height:44px" }))));
+  const feedList = h("ol", { "aria-live": "polite" }, Array.from({ length: 4 }, () => h("li", {}, h("div", { class: "skel", style: "height:44px;margin:8px 0" }))));
+  const feedFoot = h("div", { class: "feed-foot" }, h("div", { class: "skel", style: "height:36px;grid-column:1/-1" }));
+  const listBox = h("div", {}, skel(80, 2));
+  const role = (t, d, ic, href) => h("a", { class: "role", href }, h("span", { class: "tile", "aria-hidden": "true" }, icon(ic, 26)), h("span", {}, h("span", { class: "t", text: t }), h("span", { class: "d", text: d })), icon("arrow", 18));
+  const bountyOpts = [5, 10, 25, 50].map((v) => [v, String(v)]);
+  const winOpts = windowOptions().map((v) => [v, fmtMinutes(v)]);
+  const minOpts = [30, 50, 70].map((v) => [v, String(v)]);
+  const sentenceEl = h("p", { class: "sentence" }), costEl = h("p", { class: "xs", style: "margin-top:12px" });
+  const redraw = () => {
+    sentenceEl.textContent = `I will put up ${draft.bounty} GEN, take answers for ${fmtMinutes(draft.minutes)} and pay out only if the best answer scores at least ${draft.min} out of 100.`;
+    costEl.textContent = `You lock ${draft.bounty} GEN when you post. Each answer adds a ${genStr(state.cfg.answer_fee_wei)} GEN fee to the pot.`;
+  };
+  redraw();
+  put(root,
+    h("section", { class: "hero", "aria-labelledby": "heroTitle" },
+      h("div", {}, live, h("h1", { class: "display", id: "heroTitle", text: "Ask a question. Pay only for answers that meet your rubric." }),
+        h("p", { class: "lede", text: "A bounty, a rubric, and an LLM grader that validators check." }),
+        h("div", { class: "actions" }, h("a", { class: "btn btn-primary", href: "#/ask" }, "Post a question", icon("arrow", 18)), h("a", { class: "btn btn-secondary", href: "#/questions", text: "Answer for a bounty" }))),
+      heroArt()),
+    stats,
+    h("section", { class: "section", "aria-labelledby": "feedTitle" },
+      h("div", { class: "panel feed" }, h("div", { class: "feed-head" }, h("h2", { id: "feedTitle", text: "Live contract activity" }), h("span", { class: "src", text: "On-chain" })), feedList, feedFoot)),
+    h("section", { class: "section", "aria-labelledby": "rolesTitle" }, h("h2", { id: "rolesTitle", text: "Start where you are" }),
+      h("div", { class: "roles" },
+        role("Ask", "Post a question, a rubric and a bounty.", "ask", "#/ask"),
+        role("Answer", "Pick an open bounty and submit text or a link.", "doc", "#/questions"),
+        role("Explore", isSandbox() ? "Run a guided test of the whole flow." : "See every question and how it was graded.", "flask", isSandbox() ? "#/lab" : "#/questions"))),
+    h("section", { class: "section core", "aria-labelledby": "writeTitle" }, h("h2", { id: "writeTitle", text: "Set up your bounty" }),
+      h("div", { class: "panel" }, sentenceEl,
+        h("div", { class: "chiprow" }, h("span", { class: "lab", text: "Bounty (GEN)" }), chipGroup(bountyOpts, () => draft.bounty, (v) => { draft.bounty = v; redraw(); })),
+        h("div", { class: "chiprow" }, h("span", { class: "lab", text: "Answers open for" }), chipGroup(winOpts, () => draft.minutes, (v) => { draft.minutes = v; redraw(); })),
+        h("div", { class: "chiprow" }, h("span", { class: "lab", text: "Pass mark (out of 100)" }), chipGroup(minOpts, () => draft.min, (v) => { draft.min = v; redraw(); })),
+        costEl,
+        h("div", { class: "actions", style: "margin-top:16px;max-width:460px" }, h("a", { class: "btn btn-primary", href: "#/ask" }, "Write the question", icon("arrow", 18))),
+        testNote())),
+    h("section", { class: "section" }, h("details", { class: "how", open: window.matchMedia("(min-width:900px)").matches }, h("summary", { text: "How it works" }),
+      h("ol", { class: "steps" }, [["Post", "Lock a bounty, write the question and up to four rubric criteria, and set a deadline."],
+        ["Answer", "Anyone can answer once with text or a link. A small fee per answer is added to the bounty."],
+        ["Grade", "After the deadline, anyone runs grading. The LLM scores each answer on each criterion and validators agree on the result."],
+        ["Settle", "The best score wins the pot. The asker may dispute once with a bond. If nobody passes, the asker gets the pot back."]]
+        .map(([t, d], i) => h("li", {}, h("span", { class: "n", text: String(i + 1) }), h("h3", { text: t }), h("p", { text: d })))))),
+    h("section", { class: "section", "aria-labelledby": "latestTitle" },
+      h("div", { class: "sechead" }, h("h2", { id: "latestTitle", text: "Latest questions" }), h("a", { href: "#/questions", class: "btn btn-quiet sm", text: "All questions" })), listBox));
+
+  let st, acct, act, list;
+  try { [st, acct, act, list] = await Promise.all([readJson("get_stats"), readJson("get_accounting"), readJson("get_activity", [0, 6]), readJson("list_questions", [0, 6, ""])]); }
+  catch (e) {
+    put(live, h("span", { text: "The contract could not be read right now." }));
+    put(stats, h("div", { style: "grid-column:1/-1" }, h("p", { class: "muted small", text: explain(e) }), h("button", { class: "btn btn-secondary sm", type: "button", style: "margin-top:8px", text: "Try again", onclick: () => viewHome(root) })));
+    put(feedList, h("li", {}, h("p", { class: "muted small", style: "padding:12px 0", text: "Activity is unavailable until the contract can be read." }))); clear(feedFoot); put(listBox, h("p", { class: "muted small", text: explain(e) })); return;
+  }
+  put(live, h("i", { "aria-hidden": "true" }), h("span", {}, h("b", { text: String(st.open) }), st.open === 1 ? " question open right now" : " questions open right now"));
+  stats.removeAttribute("aria-busy");
+  put(stats,
+    h("div", {}, h("dt", { text: "Locked" }), h("dd", {}, genStr(st.locked_total), h("small", { text: "GEN" })), h("span", { class: "sub", text: `${st.open + st.graded + st.disputed} live questions` })),
+    h("div", {}, h("dt", { text: "Questions" }), h("dd", { text: String(st.questions) }), h("span", { class: "sub", text: `${st.settled} settled` })),
+    h("div", {}, h("dt", { text: "Answers" }), h("dd", { text: String(st.answers) }), h("span", { class: "sub", text: st.questions ? `${(st.answers / st.questions).toFixed(1)} per question` : "none yet" })),
+    h("div", {}, h("dt", { text: "Paid" }), h("dd", {}, genStr(st.paid_total), h("small", { text: "GEN" })), h("span", { class: "sub", text: `${st.won} ${st.won === 1 ? "bounty" : "bounties"} won` })));
+  if (!act.items.length) put(feedList, h("li", {}, h("div", { class: "empty", style: "padding:24px 8px" }, h("h3", { text: "No activity yet" }), h("p", { class: "small", text: "The first question posted on this contract appears here." }))));
+  else put(feedList, act.items.map((ev) => {
+    const [title, sub, ic] = (EVENT[ev.kind] || ((e) => [e.kind + ": " + e.title, "", "doc"]))(ev);
+    return h("li", {}, h("a", { href: "#/q/" + ev.question_id }, h("span", { class: "glyph", "aria-hidden": "true" }, icon(ic, 18)),
+      h("span", { style: "min-width:0" }, h("span", { class: "ev-t", text: title }), h("span", { class: "ev-s", text: sub })), h("span", { class: "ev-a", text: timeAgo(ev.epoch) })));
+  }));
+  const balanced = !!acct.balance_covers_liabilities && !!acct.locked_matches_questions;
+  put(feedFoot,
+    h("div", {}, h("b", { class: "num", text: genStr(acct.locked_total) + " GEN" }), h("span", { text: "locked in live questions" })),
+    h("div", {}, h("b", { class: "num", text: genStr(acct.owed_total) + " GEN" }), h("span", { text: "claimable by users" })),
+    h("div", { class: "bal" + (balanced ? "" : " off") }, h("b", {}, icon(balanced ? "check" : "x", 18), balanced ? "Balanced" : "Check"),
+      h("span", { text: balanced ? "Contract balance equals locked bounties plus claims" : "Liabilities exceed the contract balance" })));
+  if (!list.items.length) put(listBox, h("div", { class: "panel empty" }, h("h3", { text: "No questions yet" }), h("p", { text: "The first question posted on this contract will appear here." }), h("a", { class: "btn btn-primary", href: "#/ask", text: "Post the first question" })));
+  else put(listBox, h("div", { class: "cards" }, list.items.slice(0, 6).map(qCard)));
+}
+
+/* =====================================================================
+   ASK
+   ===================================================================== */
+async function viewAsk(root) {
+  if (gate(root)) return;
+  initDraft();
+  const cfg = state.cfg;
+  const tx = txPanel();
+  const issues = h("p", { class: "err", role: "alert", id: "askIssues" });
+  const title = h("input", { class: "input", id: "qTitle", value: draft.title, maxlength: String(cfg.max_title), placeholder: "What do you want answered?", autocomplete: "off" });
+  const details = h("textarea", { class: "input", id: "qDetails", maxlength: String(cfg.max_details), placeholder: "Context, format and limits for the answers (optional)" });
+  details.value = draft.details;
+  const critBox = h("div", { class: "stack" });
+  const bountyIn = h("input", { class: "input", id: "qBounty", inputmode: "decimal", value: String(draft.bounty), "aria-label": "Bounty in GEN" });
+  const summary = h("dl", { class: "dl" });
+  const submit = h("button", { class: "btn btn-primary block", type: "button", text: "Review and post" });
+  const bountyChips = h("div", { class: "seg" });
+  const winChips = h("div", { class: "seg" });
+  const minChips = h("div", { class: "seg" });
+
+  const cleanCrit = () => draft.criteria.map((c) => c.replace(/\|/g, "/").replace(/\s+/g, " ").trim()).filter(Boolean);
+  function problem() {
+    const t = draft.title.replace(/\s+/g, " ").trim();
+    if (t.length < 8 || t.length > cfg.max_title) return `The title needs 8 to ${cfg.max_title} characters.`;
+    if (draft.details.length > cfg.max_details) return `The details are limited to ${cfg.max_details} characters.`;
+    const c = cleanCrit();
+    if (c.length < 1) return "Write at least one grading criterion.";
+    if (c.some((x) => x.length < 3 || x.length > 160)) return "Each criterion needs 3 to 160 characters.";
+    const w = genToWei(String(draft.bountyText ?? draft.bounty));
+    if (w === null || w < BigInt(cfg.min_bounty_wei)) return `The bounty must be at least ${genStr(cfg.min_bounty_wei)} GEN.`;
+    if (w > BigInt(cfg.max_bounty_gen) * WEI) return `The bounty may be at most ${cfg.max_bounty_gen} GEN.`;
+    return "";
+  }
+  function drawSummary() {
+    const p = problem(); issues.textContent = p; submit.disabled = !!p;
+    const w = genToWei(String(draft.bountyText ?? draft.bounty)) || 0n;
+    const bond = (() => { let b = (w * BigInt(cfg.dispute_bond_bps)) / 10000n; b = ((b + WEI - 1n) / WEI) * WEI; const mn = BigInt(cfg.min_dispute_bond_wei); return b < mn ? mn : b; })();
+    put(summary,
+      h("dt", { text: "Bounty" }), h("dd", { class: "num", text: genStr(w, 4) + " GEN" }),
+      h("dt", { text: "Fee per answer" }), h("dd", { class: "num", text: genStr(cfg.answer_fee_wei) + " GEN, added to the pot" }),
+      h("dt", { text: "Answers close" }), h("dd", { text: fmtEpoch(nowSec() + draft.minutes * 60) }),
+      h("dt", { text: "Pass mark" }), h("dd", { text: draft.min + " of 100" }),
+      h("dt", { text: "Criteria" }), h("dd", { text: String(cleanCrit().length) }),
+      h("dt", { text: "Dispute bond (if needed)" }), h("dd", { class: "num", text: genStr(bond) + " GEN" }));
+  }
+  function drawChips() {
+    const mk = (box, opts, get, set) => put(box, opts.map(([v, t]) => h("button", { class: "chip", type: "button", text: t, "aria-pressed": String(get() === v), onclick: () => { set(v); drawChips(); drawSummary(); } })));
+    mk(bountyChips, [5, 10, 25, 50].map((v) => [v, String(v) + " GEN"]), () => (draft.bountyText === undefined ? draft.bounty : null), (v) => { draft.bounty = v; draft.bountyText = undefined; bountyIn.value = String(v); });
+    mk(winChips, windowOptions().map((v) => [v, fmtMinutes(v)]), () => draft.minutes, (v) => (draft.minutes = v));
+    mk(minChips, [30, 50, 70, 80].map((v) => [v, String(v)]), () => draft.min, (v) => (draft.min = v));
+  }
+  function drawCrit() {
+    put(critBox, draft.criteria.map((c, i) => {
+      const inp = h("input", { class: "input", value: c, maxlength: "160", placeholder: i === 0 ? "For example: States the correct final answer" : "Another thing a good answer must do", "aria-label": "Criterion " + (i + 1), autocomplete: "off" });
+      inp.addEventListener("input", () => { draft.criteria[i] = inp.value; drawSummary(); });
+      return h("div", { class: "row" }, h("span", { class: "glyph", "aria-hidden": "true", style: "font-weight:700;font-size:14px", text: String(i + 1) }), inp,
+        draft.criteria.length > 1 ? h("button", { class: "iconbtn", type: "button", "aria-label": "Remove criterion " + (i + 1), onclick: () => { draft.criteria.splice(i, 1); drawCrit(); drawSummary(); } }, icon("x", 16)) : null);
+    }), draft.criteria.length < cfg.max_criteria ? h("button", { class: "btn btn-secondary sm", type: "button", text: "Add a criterion", onclick: () => { draft.criteria.push(""); drawCrit(); } }) : null);
+  }
+  title.addEventListener("input", () => { draft.title = title.value; drawSummary(); });
+  details.addEventListener("input", () => { draft.details = details.value; drawSummary(); });
+  bountyIn.addEventListener("input", () => { draft.bountyText = bountyIn.value.trim(); drawChips(); drawSummary(); });
+  submit.addEventListener("click", () => runButton(submit, async () => {
+    if (!needClient()) return;
+    const w = genToWei(String(draft.bountyText ?? draft.bounty));
+    const ok = await confirmAction({ title: "Post this question?", intro: "The bounty is locked in the contract until the question settles.",
+      rows: [["Bounty", genStr(w, 4) + " GEN"], ["Answers close", fmtEpoch(nowSec() + draft.minutes * 60)], ["Pass mark", draft.min + " of 100"]],
+      note: "You can cancel only while there are no answers. After the deadline anyone can run grading.", confirm: "Post and lock " + genStr(w, 4) + " GEN" });
+    if (!ok) return;
+    const res = await write(tx, "your question", "post_question", [draft.title.replace(/\s+/g, " ").trim(), draft.details, cleanCrit().join(" | "), Number(draft.min), Number(draft.minutes)], w);
+    if (res && res.question_id) { toast("Question posted"); Object.assign(draft, { title: "", details: "", criteria: ["", ""], bountyText: undefined }); location.hash = "#/q/" + res.question_id; }
+  }));
+  drawCrit(); drawChips(); drawSummary();
+  put(root,
+    h("div", { class: "pagehead" }, h("h1", { text: "Post a question" }), h("p", { text: "Write the question, say how answers will be judged, and lock a bounty." })),
+    h("div", { class: "cols" },
+      h("div", { class: "stack-lg" },
+        h("section", { class: "panel stack" },
+          h("div", { class: "field" }, h("label", { for: "qTitle" }, "Question", h("span", { class: "req", "aria-hidden": "true", text: "*" })), title),
+          h("div", { class: "field" }, h("label", { for: "qDetails", text: "Details" }), details)),
+        h("section", { class: "panel" }, h("h2", { text: "Grading rubric" }), h("p", { class: "muted small", style: "margin:4px 0 16px", text: `Up to ${cfg.max_criteria} criteria. Each answer is scored 0 to ${cfg.score_max} on every one, then averaged to a score out of 100.` }), critBox),
+        h("section", { class: "panel stack" }, h("h2", { text: "Terms" }),
+          h("div", {}, h("span", { class: "label", text: "Bounty" }), bountyChips, h("div", { class: "field", style: "margin-top:12px" }, h("label", { for: "qBounty", text: "Or enter an amount in GEN" }), bountyIn)),
+          h("div", {}, h("span", { class: "label", text: "Answers stay open for" }), winChips),
+          h("div", {}, h("span", { class: "label", text: "Pass mark (out of 100)" }), minChips, h("p", { class: "help", text: "If no answer reaches this score the whole pot returns to you." })))),
+      h("div", { class: "sticky first-mobile" },
+        h("section", { class: "panel" }, h("h2", { text: "Summary" }), h("div", { style: "margin-top:16px" }, summary), issues,
+          !account ? h("div", { style: "margin-top:16px" }, connectPrompt("Connect a wallet to lock the bounty.")) : null,
+          h("div", { style: "margin-top:16px" }, submit, testNote()), tx.el))));
+}
+
+/* =====================================================================
+   QUESTIONS
+   ===================================================================== */
+const qf = { status: "", q: "", items: [], total: 0, more: false };
+async function viewQuestions(root) {
+  if (gate(root)) return;
+  const box = h("div", {}, skel(68, 4));
+  const more = h("div", { style: "margin-top:16px;text-align:center" });
+  const search = h("input", { class: "input", type: "search", placeholder: "Search titles", "aria-label": "Search questions", value: qf.q });
+  const chips = h("div", { class: "seg", role: "group", "aria-label": "Filter by status" });
+  function draw() {
+    put(chips, [["", "All"], ["OPEN", "Open"], ["GRADED", "Graded"], ["DISPUTED", "Disputed"], ["SETTLED", "Settled"]].map(([v, t]) => h("button", { class: "chip", type: "button", text: t, "aria-pressed": String(qf.status === v), onclick: () => { qf.status = v; load(true); } })));
+    const shown = qf.items.filter((q) => !qf.q || q.title.toLowerCase().includes(qf.q));
+    if (!shown.length) put(box, h("div", { class: "panel empty" }, h("h3", { text: qf.items.length ? "Nothing matches" : "No questions here yet" }), h("p", { text: qf.items.length ? "Try another word or filter." : "Questions posted on this contract will appear here." }), qf.items.length ? null : h("a", { class: "btn btn-primary", href: "#/ask", text: "Post a question" })));
+    else put(box, qCollection(shown));
+    put(more, qf.more ? h("button", { class: "btn btn-secondary", type: "button", text: "Load more", onclick: (ev) => runButton(ev.currentTarget, () => load(false)) }) : null);
+  }
+  async function load(reset) {
+    if (reset) { qf.items = []; put(box, skel(68, 4)); }
+    try { const r = await readJson("list_questions", [qf.items.length, 20, qf.status]); qf.items = qf.items.concat(r.items); qf.total = r.total; qf.more = r.has_more; draw(); }
+    catch (e) { put(box, h("div", { class: "panel", role: "alert" }, h("p", { text: explain(e) }), h("button", { class: "btn btn-secondary sm", type: "button", style: "margin-top:8px", text: "Try again", onclick: () => load(true) }))); }
+  }
+  search.addEventListener("input", () => { qf.q = search.value.trim().toLowerCase(); draw(); });
+  put(root, h("div", { class: "pagehead" }, h("h1", { text: "Questions" }), h("p", { text: "Every bounty on this contract, newest first." })),
+    h("div", { class: "stack" }, search, chips, box, more));
+  await load(true);
+}
+
+/* =====================================================================
+   QUESTION
+   ===================================================================== */
+let tickTimer = null;
+const stopTick = () => { if (tickTimer) { clearInterval(tickTimer); tickTimer = null; } };
+const isUrl = (s) => /^https:\/\/[^\s]+$/.test(s);
+async function viewQuestion(root, id) {
+  if (gate(root)) return;
+  put(root, skel(120), skel(260));
+  let q, ans, pend = 0n;
+  const load = async () => {
+    const [a, b] = await Promise.all([readJson("get_question", [id]), readJson("get_answers", [id])]);
+    q = a; ans = b.items;
+    pend = account ? BigInt(String(await read("get_pending_withdrawal", [account]))) : 0n;
+  };
+  try { await load(); } catch (e) {
+    put(root, h("div", { class: "panel stack", role: "alert", style: "max-width:62ch" }, h("h1", { text: "This question could not be shown" }), h("p", { class: "muted", text: explain(e) }), h("a", { class: "btn btn-secondary", href: "#/questions", text: "Back to questions" }))); return;
+  }
+  const tx = txPanel();
+  const form = { kind: "TEXT", text: "", reason: "" };
+  let lastKey = statusKey(q);
+  const refresh = async () => { try { await load(); } catch (e) { toast(explain(e), true); } lastKey = statusKey(q); draw(); };
+  const act = (btn, fn) => runButton(btn, fn);
+
+  function answerForm() {
+    const cfg = state.cfg;
+    const input = form.kind === "URL" ? h("input", { class: "input", id: "aIn", value: form.text, placeholder: "https://", autocomplete: "off", inputmode: "url", "aria-label": "Link" }) : h("textarea", { class: "input", id: "aIn", placeholder: "Write your answer", "aria-label": "Answer" });
+    if (form.kind !== "URL") input.value = form.text;
+    const err = h("p", { class: "err", role: "alert" });
+    const send = h("button", { class: "btn btn-primary block", type: "button", text: "Submit answer for " + genStr(cfg.answer_fee_wei) + " GEN" });
+    const check = () => {
+      const t = form.text.trim(); let p = "";
+      if (form.kind === "URL") p = t.length < 12 || t.length > cfg.max_url || !isUrl(t) ? "Enter a full https:// link." : "";
+      else p = t.length < 2 || t.length > cfg.max_text_answer ? `Write 2 to ${cfg.max_text_answer} characters.` : "";
+      err.textContent = t ? p : ""; send.disabled = !!p || !t; return !p && !!t;
+    };
+    input.addEventListener("input", () => { form.text = input.value; check(); });
+    send.addEventListener("click", () => act(send, async () => {
+      if (!needClient() || !check()) return;
+      const ok = await confirmAction({ title: "Submit this answer?", intro: "The fee is added to the bounty and is not refunded. One answer per address.", rows: [["Fee", genStr(cfg.answer_fee_wei) + " GEN"], ["Type", form.kind === "URL" ? "Link" : "Text"]], confirm: "Submit and pay " + genStr(cfg.answer_fee_wei) + " GEN" });
+      if (!ok) return;
+      const r = await write(tx, "your answer", "submit_answer", [q.id, form.kind, form.text.trim()], BigInt(cfg.answer_fee_wei));
+      if (r) { toast("Answer submitted"); form.text = ""; refresh(); }
+    }));
+    check();
+    return h("div", { class: "stack" }, h("h2", { text: "Your answer" }),
+      h("div", { class: "seg" }, [["TEXT", "Text"], ["URL", "Link"]].map(([v, t]) => h("button", { class: "chip", type: "button", text: t, "aria-pressed": String(form.kind === v), onclick: () => { form.kind = v; form.text = ""; draw(); } }))),
+      h("div", { class: "field" }, h("label", { for: "aIn", text: form.kind === "URL" ? "Link to your answer" : "Answer" }), input, err,
+        h("p", { class: "help", text: form.kind === "URL" ? "The grader reads the page text. A link it cannot read scores zero." : "Answers are public and graded only on the rubric." })), send, testNote());
+  }
+  function disputeForm() {
+    const reason = h("textarea", { class: "input", id: "dReason", placeholder: "Say which criterion the grading got wrong and why", "aria-label": "Reason" }); reason.value = form.reason;
+    const err = h("p", { class: "err", role: "alert" });
+    const send = h("button", { class: "btn btn-secondary block", type: "button", text: "Dispute with " + genStr(q.dispute_bond) + " GEN bond" });
+    const check = () => { const t = form.reason.trim(); const p = t.length < 10 || t.length > state.cfg.max_reason ? `Write 10 to ${state.cfg.max_reason} characters.` : ""; err.textContent = t ? p : ""; send.disabled = !!p; return !p; };
+    reason.addEventListener("input", () => { form.reason = reason.value; check(); });
+    send.addEventListener("click", () => act(send, async () => {
+      if (!check()) return;
+      const ok = await confirmAction({ title: "Dispute the grading?", intro: "Validators will grade every answer again with your reason in view. You can dispute only once.", rows: [["Bond", genStr(q.dispute_bond) + " GEN"]], note: "If the re-grade keeps the same winner, the bond goes to that winner. If the result changes, the bond comes back to you.", confirm: "Post bond and dispute" });
+      if (!ok) return;
+      const r = await write(tx, "your dispute", "dispute", [q.id, form.reason.trim()], BigInt(q.dispute_bond));
+      if (r) { toast("Dispute filed"); refresh(); }
+    }));
+    check();
+    return h("div", { class: "stack" }, h("h3", { text: "Disagree with the result?" }), h("div", { class: "field" }, h("label", { for: "dReason", text: "Reason" }), reason, err), send, testNote());
+  }
+  const simple = (label, fn, primary, extra) => { const b = h("button", { class: "btn " + (primary === false ? "btn-secondary" : "btn-primary") + " block", type: "button", text: label }); b.addEventListener("click", () => act(b, fn)); return b; };
+
+  function actions() {
+    const k = statusKey(q), cfg = state.cfg, isAsker = same(account, q.asker), mine = ans.find((a) => same(a.answerer, account)), now = nowSec();
+    const out = [];
+    if (k === "OPEN") {
+      out.push(h("p", { class: "callout small", text: `Answers close in ${dur(Number(q.deadline_epoch) - now)}. Pot so far: ${genStr(q.pot)} GEN.` }));
+      if (!account) out.push(connectPrompt("Connect a wallet to answer."));
+      else if (isAsker) {
+        out.push(h("p", { class: "muted small", text: "You asked this question, so you cannot answer it." }));
+        if (!Number(q.answer_count)) out.push(simple("Cancel and take the bounty back", async () => {
+          if (!(await confirmAction({ title: "Cancel this question?", intro: "Only possible while there are no answers.", rows: [["Returned", genStr(q.pot) + " GEN"]], confirm: "Cancel question", danger: true }))) return;
+          if (await write(tx, "the cancellation", "cancel_question", [q.id])) { toast("Question cancelled"); refresh(); }
+        }, false));
+      } else if (mine) out.push(h("p", { class: "callout small", text: "You have answered this question. Grading opens after the deadline." }));
+      else if (Number(q.answer_count) >= cfg.max_answers) out.push(h("p", { class: "muted small", text: `This question has the maximum of ${cfg.max_answers} answers.` }));
+      else out.push(answerForm());
+    }
+    if (k === "AWAITING") {
+      const late = now >= Number(q.deadline_epoch) + Number(cfg.grade_timeout_seconds);
+      out.push(h("p", { class: "callout small", text: Number(q.answer_count) ? "Answers are closed. Anyone can run grading; validators read every answer and agree on the scores." : "Nobody answered. Running this returns the bounty to the asker." }));
+      out.push(simple(Number(q.answer_count) ? "Grade the answers" : "Close and refund", async () => { if (await write(tx, "grading", "grade", [q.id])) { toast("Grading recorded"); refresh(); } }));
+      if (late) out.push(simple("Void and refund everyone", async () => {
+        if (!(await confirmAction({ title: "Void this question?", intro: "Grading did not complete in time. The asker gets the bounty back and every answerer gets their fee back.", confirm: "Void question", danger: true }))) return;
+        if (await write(tx, "the void", "void_question", [q.id])) { toast("Question voided and refunded"); refresh(); }
+      }, false));
+    }
+    if (k === "GRADED") {
+      const left = Number(q.dispute_deadline_epoch) - now;
+      out.push(h("p", { class: "callout warn small", text: left > 0 ? `Winner picked. The asker can accept or dispute for ${dur(left)}.` : "The dispute window has ended. Anyone can finalize." }));
+      if (isAsker && left > 0) {
+        out.push(simple("Accept the result now", async () => {
+          if (!(await confirmAction({ title: "Accept the result?", intro: "The pot is credited to the winning answerer and you give up the dispute.", rows: [["Pot", genStr(q.pot) + " GEN"]], confirm: "Accept result" }))) return;
+          if (await write(tx, "the acceptance", "accept_result", [q.id])) { toast("Result accepted"); refresh(); }
+        }, false), disputeForm());
+      }
+      if (left <= 0) out.push(simple("Finalize and pay the winner", async () => { if (await write(tx, "finalization", "finalize", [q.id])) { toast("Settled"); refresh(); } }));
+    }
+    if (k === "DISPUTED") {
+      out.push(h("p", { class: "callout bad small", text: "The asker disputed the result. Running the review grades every answer again." }));
+      out.push(simple("Run the review", async () => { if (await write(tx, "the review", "finalize", [q.id])) { toast("Review recorded"); refresh(); } }));
+      if (now >= Number(q.dispute.epoch) + Number(cfg.grade_timeout_seconds)) out.push(simple("Apply the original result", async () => { if (await write(tx, "the lapse", "void_question", [q.id])) { toast("Original result applied"); refresh(); } }, false));
+    }
+    if (["WON", "REFUNDED", "CANCELLED", "VOID"].includes(k)) {
+      const won = k === "WON" ? ans[Number(q.winner)] : null;
+      out.push(h("p", { class: "callout" + (k === "WON" ? "" : " warn") + " small", text: k === "WON" ? `Paid ${genStr(q.paid)} GEN to ${short(won.answerer)}.` : k === "REFUNDED" ? "No answer passed, so the pot went back to the asker." : k === "CANCELLED" ? "The asker cancelled before any answers." : "Grading timed out and everyone was refunded." }));
+    }
+    if (pend > 0n) out.push(h("div", { class: "inset stack" }, h("p", { class: "small" }, h("b", { text: genStr(pend, 4) + " GEN" }), " is waiting in your balance."),
+      simple("Withdraw to my wallet", async () => { if (await write(tx, "your withdrawal", "withdraw", [])) { toast("Withdrawn to your wallet"); refresh(); } }, true)));
+    return out;
+  }
+  function timeline() {
+    const k = statusKey(q), graded = Number(q.graded_epoch) > 0, settled = Number(q.settled_epoch) > 0;
+    const row = (done, now, t, s) => h("li", { class: done ? "done" : now ? "now" : "" }, h("span", { class: "b", "aria-hidden": "true" }), h("div", {}, h("b", { text: t }), h("small", { text: s })));
+    return h("ol", { class: "timeline" },
+      row(true, false, "Posted", fmtEpoch(q.created_epoch)),
+      row(["AWAITING", "GRADED", "DISPUTED", "WON", "REFUNDED", "VOID"].includes(k), k === "OPEN", "Answers close", fmtEpoch(q.deadline_epoch)),
+      row(graded, k === "AWAITING", "Graded", graded ? fmtEpoch(q.graded_epoch) : "After the deadline"),
+      row(["DISPUTED", "WON", "REFUNDED"].includes(k) && graded && Number(q.winner) >= 0 || q.disputed, k === "GRADED", q.disputed ? "Disputed" : "Dispute window", Number(q.dispute_deadline_epoch) ? "Until " + fmtEpoch(q.dispute_deadline_epoch) : "Only if there is a winner"),
+      row(settled, k === "DISPUTED", "Settled", settled ? fmtEpoch(q.settled_epoch) : "Pending"));
+  }
+  function answerCard(a) {
+    const graded = a.score !== null && a.score !== undefined, win = statusKey(q) === "WON" && Number(q.winner) === Number(a.index);
+    return h("article", { class: "ans" + (win ? " win" : ""), "aria-label": "Answer " + (a.index + 1) },
+      h("div", { class: "row between wrap" }, h("div", { class: "row" }, graded ? h("span", { class: "badge", text: "Rank " + a.rank }) : h("span", { class: "badge", text: "Not graded" }), win ? h("span", { class: "badge WON", text: "Winner" }) : null),
+        graded ? h("span", { class: "score num" }, String(a.score), h("small", { text: " / 100" })) : null),
+      h("p", { class: "xs", style: "margin-top:6px", text: `${short(a.answerer)} · ${timeAgo(a.created_epoch)}${a.first_score !== null && a.first_score !== undefined ? ` · first grading ${a.first_score}` : ""}` }),
+      a.kind === "URL" ? h("p", { class: "body" }, isUrl(a.content) ? h("a", { href: a.content, target: "_blank", rel: "noopener noreferrer nofollow", text: a.content, style: "overflow-wrap:anywhere" }) : a.content) : h("p", { class: "body", text: a.content }),
+      a.kind === "URL" && graded && a.fetched === false ? h("p", { class: "err", text: "The grader could not read this link." }) : null,
+      graded ? h("div", { style: "margin-top:12px" }, a.criteria_scores.map((s, i) => h("div", { class: "cbar" }, h("div", {}, q.criteria[i], h("div", { class: "track" }, h("i", { style: `width:${s * 10}%` }))), h("b", { class: "num", text: s + "/" + state.cfg.score_max })))) : null,
+      graded && a.note ? h("p", { class: "small muted", style: "margin-top:10px", text: a.note }) : null);
+  }
+  const cdEl = h("span", { class: "num" });
+  function draw() {
+    const mid = h("div", { class: "stack-lg" },
+      h("section", { class: "panel stack" }, q.details ? h("p", { style: "white-space:pre-wrap;overflow-wrap:anywhere", text: q.details }) : h("p", { class: "muted", text: "No extra details." }),
+        h("div", {}, h("h2", { style: "margin-bottom:12px", text: "Grading rubric" }), h("ol", { class: "crit" }, q.criteria.map((c, i) => h("li", {}, h("span", { class: "n", text: String(i + 1) }), h("span", { text: c })))))),
+      h("section", { class: "panel" }, h("h2", { style: "margin-bottom:12px", text: `Answers (${ans.length})` }),
+        ans.length ? h("div", { class: "stack" }, ans.slice().sort((x, y) => (x.rank || 99) - (y.rank || 99) || x.index - y.index).map(answerCard)) : h("p", { class: "muted", text: "No answers yet." })));
+    const side = h("div", { class: "stack-lg sticky first-mobile" },
+      h("section", { class: "panel stack" }, ...actions(), tx.el),
+      h("section", { class: "panel" }, h("h2", { style: "margin-bottom:12px", text: "Pot" }), h("dl", { class: "dl" },
+        h("dt", { text: "Bounty" }), h("dd", { class: "num", text: genStr(q.bounty) + " GEN" }), h("dt", { text: "Answer fees" }), h("dd", { class: "num", text: genStr(q.fees) + " GEN" }),
+        h("dt", { text: "Pot" }), h("dd", { class: "num", text: genStr(q.pot) + " GEN" }), h("dt", { text: "Pass mark" }), h("dd", { text: q.min_score + " of 100" }),
+        h("dt", { text: "Dispute bond" }), h("dd", { class: "num", text: Number(q.dispute_bond) ? genStr(q.dispute_bond) + " GEN" : "set at grading" }), h("dt", { text: "Asker" }), h("dd", { class: "addr", text: short(q.asker) }))),
+      h("section", { class: "panel" }, h("h2", { style: "margin-bottom:12px", text: "Timeline" }), timeline()));
+    put(root, h("div", { class: "pagehead" }, h("a", { class: "btn btn-quiet sm", href: "#/questions", style: "margin-left:-10px" }, icon("back", 16), "Questions"),
+      h("div", { class: "row wrap", style: "margin-top:8px" }, badge(q), h("span", { class: "xs" }, cdEl)), h("h1", { style: "margin-top:8px;overflow-wrap:anywhere", text: q.title })),
+      h("div", { class: "cols" }, mid, side));
+    const upd = () => { cdEl.textContent = closesText(q); };
+    upd();
+  }
+  draw();
+  stopTick();
+  tickTimer = setInterval(() => {
+    if (!document.contains(cdEl)) return stopTick();
+    cdEl.textContent = closesText(q);
+    if (statusKey(q) !== lastKey && !dlg.open && !busy.size) { lastKey = statusKey(q); draw(); }
+  }, 1000);
+}
+
+/* =====================================================================
+   MINE
+   ===================================================================== */
+async function viewMine(root) {
+  if (gate(root)) return;
+  const head = h("div", { class: "pagehead" }, h("h1", { text: "Mine" }), h("p", { text: "Your questions, your answers and any GEN waiting for you." }));
+  if (!account) { put(root, head, h("div", { class: "panel", style: "max-width:62ch" }, connectPrompt("Connect a wallet to see your activity."))); return; }
+  put(root, head, skel(120), skel(200));
+  let asked, answered, pend;
+  try {
+    [asked, answered] = await Promise.all([readJson("get_asker_questions", [account]), readJson("get_answerer_answers", [account])]);
+    pend = BigInt(String(await read("get_pending_withdrawal", [account])));
+  } catch (e) { put(root, head, h("div", { class: "panel", role: "alert" }, h("p", { text: explain(e) }), h("button", { class: "btn btn-secondary sm", type: "button", style: "margin-top:8px", text: "Try again", onclick: () => viewMine(root) }))); return; }
+  const tx = txPanel();
+  const balance = h("section", { class: "panel stack" }, h("h2", { text: "Waiting for you" }),
+    h("p", { class: "score num" }, genStr(pend, 4), h("small", { text: " GEN" })),
+    h("p", { class: "muted small", text: pend > 0n ? "Payouts, refunds and returned bonds are credited here. Withdraw sends them to your wallet." : "Nothing to withdraw right now." }),
+    h("button", { class: "btn btn-primary block", type: "button", text: "Withdraw to my wallet", disabled: pend === 0n ? "" : null, onclick: (ev) => runButton(ev.currentTarget, async () => { if (await write(tx, "your withdrawal", "withdraw", [])) { toast("Withdrawn to your wallet"); viewMine(root); } }) }), tx.el);
+  const answersList = answered.items.length ? h("ul", { class: "plist" }, answered.items.map((a) => {
+    const won = a.question.outcome === "WON" && Number(a.question.winner) === Number(a.index);
+    return h("li", {}, h("a", { class: "prow", href: "#/q/" + a.question_id },
+      h("span", { style: "min-width:0" }, h("span", { class: "t", text: a.question.title }), h("span", { class: "s", text: a.score === null ? "Not graded yet" : `Scored ${a.score} of 100, rank ${a.rank}` })),
+      h("span", { class: "e" }, won ? h("span", { class: "badge WON", text: "Won " + genStr(a.question.paid) + " GEN" }) : badge(a.question))));
+  })) : h("div", { class: "panel empty" }, h("h3", { text: "No answers yet" }), h("a", { class: "btn btn-primary", href: "#/questions", text: "Find a bounty" }));
+  put(root, head, h("div", { class: "cols" },
+    h("div", { class: "stack-lg" },
+      h("section", {}, h("h2", { style: "margin-bottom:12px", text: `Questions I asked (${asked.total})` }), asked.items.length ? qCollection(asked.items) : h("div", { class: "panel empty" }, h("h3", { text: "No questions yet" }), h("a", { class: "btn btn-primary", href: "#/ask", text: "Post a question" }))),
+      h("section", {}, h("h2", { style: "margin-bottom:12px", text: `Answers I gave (${answered.total})` }), answersList)),
+    h("div", { class: "stack-lg sticky first-mobile" }, balance, isSandbox() ? fundCard() : null)));
+}
+
+/* =====================================================================
+   LAB
+   ===================================================================== */
+function helperSigners() {
+  let keys = []; try { keys = JSON.parse(readSlot("answerarena.helpers") || "[]"); } catch (e) {}
+  if (!Array.isArray(keys) || keys.length < 2 || !keys.every((k) => /^0x[0-9a-f]{64}$/.test(k))) { keys = [randomKey(), randomKey()]; writeSlot("answerarena.helpers", JSON.stringify(keys)); }
+  return keys.map((pk) => { const a = createAccount(pk); return { client: createClient({ chain: studionet, account: a }), address: a.address, injected: false }; });
+}
+const SCEN = {
+  A: { title: "A good answer wins", blurb: "One strong and one weak answer. Grading picks the strong one, the asker accepts, the winner is paid.",
+    q: { title: "Why does the Moon always show the same face to Earth?", details: "Explain in plain words, in under 120 words.", rubric: ["Says the Moon's rotation period equals its orbital period", "Explains that Earth's tidal forces locked the rotation", "Is clear and stays under 120 words"], bounty: 5, min: 50 },
+    answers: [{ h: 0, label: "strong answer", text: "The Moon takes as long to spin once on its axis as it takes to orbit Earth once, so the same side always faces us. This is tidal locking: Earth's gravity raised a bulge on the young Moon, and the pull on that bulge slowed its spin until rotation and orbit matched." },
+      { h: 1, label: "weak answer", text: "Because the Moon is attached to Earth." }] },
+  B: { title: "No answer passes", blurb: "A single off-topic answer scores below the pass mark, so the whole pot goes back to the asker.",
+    q: { title: "What is the capital city of Australia?", details: "One word is enough.", rubric: ["Names the correct city", "Gives the answer directly"], bounty: 5, min: 50 },
+    answers: [{ h: 0, label: "off-topic answer", text: "I like kangaroos and the beach, and my favourite food is pizza." }] },
+};
+const lab = { A: {}, B: {} };
+async function viewLab(root) {
+  if (gate(root)) return;
+  const helpers = helperSigners();
+  const head = h("div", { class: "pagehead" }, h("h1", { text: "Test lab" }), h("p", { text: "Run the whole flow alone. Two throwaway helper accounts play the answerers; you are the asker." }));
+  if (!isSandbox()) { put(root, head, h("div", { class: "panel callout warn", style: "max-width:62ch" }, "The lab needs the sandbox contract, where answers can close after one minute. This contract runs in production mode.")); return; }
+  stopTick();
+  const timers = [];
+  function card(key) {
+    const sc = SCEN[key], st = lab[key], tx = txPanel();
+    const box = h("section", { class: "panel stack" });
+    const minutes = windowOptions()[0];
+    const build = () => {
+    const steps = [];
+    steps.push({ t: "Get test GEN for the three accounts", d: "You and both helpers each receive 100 test GEN.", done: !!st.funded, run: async () => {
+      if (!needClient()) return; for (const a of [account, helpers[0].address, helpers[1].address]) await fundAddress(a).catch((e) => { throw e; }); st.funded = true; draw(); } });
+    steps.push({ t: "Post the question", d: `${sc.q.bounty} GEN bounty, ${fmtMinutes(minutes)} window. You will confirm in your wallet.`, done: !!st.qid, ready: !!st.funded, run: async () => {
+      const r = await write(tx, "the question", "post_question", [sc.q.title, sc.q.details, sc.q.rubric.join(" | "), sc.q.min, minutes], BigInt(sc.q.bounty) * WEI);
+      if (r && r.question_id) { st.qid = r.question_id; st.deadline = Number(r.deadline_epoch); draw(); } } });
+    sc.answers.forEach((a, i) => steps.push({ t: `Helper ${a.h + 1} submits a ${a.label}`, d: "Signed by the throwaway helper account.", done: !!st.answered?.[i], ready: !!st.qid, run: async () => {
+      const r = await write(tx, "the answer", "submit_answer", [st.qid, "TEXT", a.text], BigInt(state.cfg.answer_fee_wei), helpers[a.h]);
+      if (r) { st.answered = st.answered || []; st.answered[i] = true; draw(); } } }));
+    const allAnswered = sc.answers.every((_, i) => st.answered?.[i]);
+    steps.push({ t: "Run grading", d: "Available once the answer window has closed.", done: !!st.graded, ready: allAnswered, wait: st.deadline, run: async () => {
+      const r = await write(tx, "grading", "grade", [st.qid]);
+      if (r) { st.graded = true; try { const q = await readJson("get_question", [st.qid]); st.status = q.status; st.outcome = q.outcome; } catch (e) {} draw(); } } });
+    if (key === "A") steps.push({ t: "Accept the result as the asker", d: "Settles at once instead of waiting for the dispute window.", done: st.status === "SETTLED", ready: !!st.graded && st.status === "GRADED", run: async () => {
+      const r = await write(tx, "the acceptance", "accept_result", [st.qid]); if (r) { st.status = "SETTLED"; st.outcome = "WON"; draw(); } } });
+    steps.push({ t: key === "A" ? "Send the payout to the winner" : "Send the refund to the asker", d: "Moves the credited GEN to the recipient's wallet.", done: !!st.paid, ready: st.status === "SETTLED", run: async () => {
+      const q = await readJson("get_question", [st.qid]); let to = q.asker;
+      if (q.outcome === "WON") { const a = (await readJson("get_answers", [st.qid])).items[Number(q.winner)]; to = a.answerer; }
+      const r = await write(tx, "the payout", "push_payment", [to]); if (r) { st.paid = true; draw(); } } });
+    return steps;
+    };
+    function draw() {
+      const steps = build();
+      timers.splice(0).forEach(clearInterval);
+      put(box, h("div", {}, h("h2", { text: `${key}. ${sc.title}` }), h("p", { class: "muted small", style: "margin-top:4px", text: sc.blurb })),
+        h("ol", { class: "timeline" }, steps.map((s, i) => {
+          const isNext = steps.findIndex((x) => !x.done) === i; const ready = s.ready === undefined ? i === 0 : s.ready; const note = h("small", { text: s.d });
+          const btn = isNext ? h("button", { class: "btn btn-primary sm", type: "button", style: "margin-top:8px", text: "Run this step", disabled: ready ? null : "", onclick: (ev) => runButton(ev.currentTarget, s.run) }) : null;
+          if (btn && s.wait) { const upd = () => { const left = s.wait - nowSec(); btn.disabled = left > 0 || !ready; note.textContent = left > 0 ? `Opens in ${dur(left)}.` : s.d; }; upd(); timers.push(setInterval(upd, 1000)); }
+          return h("li", { class: s.done ? "done" : isNext ? "now" : "" }, h("span", { class: "b", "aria-hidden": "true" }), h("div", {}, h("b", { text: s.t }), note, btn));
+        })),
+        st.qid ? h("a", { class: "btn btn-quiet sm", href: "#/q/" + st.qid, text: "Open the question" }) : null,
+        h("button", { class: "btn btn-secondary sm", type: "button", text: "Start over", onclick: () => { lab[key] = {}; timers.splice(0).forEach(clearInterval); put(root, head); viewLab(root); } }), tx.el);
+    }
+    draw(); return box;
+  }
+  put(root, head, h("div", { class: "cols" }, h("div", { class: "stack-lg" }, card("A"), card("B")),
+    h("div", { class: "stack-lg sticky first-mobile" },
+      !account ? h("section", { class: "panel" }, h("h2", { text: "Start here" }), h("div", { style: "margin-top:12px" }, connectPrompt("Connect a wallet, or start a throwaway test session from the wallet menu."))) : null,
+      h("section", { class: "panel" }, h("h2", { text: "What this shows" }), h("ul", { class: "small muted", style: "margin:8px 0 0;padding-left:18px;display:grid;gap:6px" },
+        h("li", { text: "Answer fees are added to the bounty." }), h("li", { text: "The LLM scores every answer on every criterion." }), h("li", { text: "The best score above the pass mark wins; ties go to the earliest answer." }), h("li", { text: "If nobody passes, the asker gets the pot back." }))))));
+}
+
+/* ---------- router ---------- */
+const TABS = [["", "home", "Home"], ["ask", "ask", "Ask"], ["questions", "list", "Questions"], ["mine", "user", "Mine"]];
+function drawTabs(active) { put($("tabs"), TABS.map(([path, ic, text]) => h("li", {}, h("a", { href: "#/" + path, "aria-current": active === path ? "page" : null }, icon(ic), h("span", { text }))))); }
+const TITLES = { ask: "Post a question", questions: "Questions", mine: "Mine", lab: "Test lab" };
+let routeSeq = 0, firstRoute = true;
+async function route() {
+  const seq = ++routeSeq; stopTick();
+  if (dlg.open) closeDialog(false);
+  const [pathRaw] = (location.hash || "#/").slice(2).split("?");
+  const m = pathRaw.match(/^q\/(.+)$/);
+  const name = m ? "questions" : pathRaw.split("/")[0];
+  drawTabs(TABS.some((t) => t[0] === name) ? name : "");
+  document.title = m ? `Question ${decodeURIComponent(m[1])} – AnswerArena` : name ? `${TITLES[name] || "AnswerArena"} – AnswerArena` : "AnswerArena";
+  const root = $("app");
+  if (hasContract && !state.cfg && !state.bootError) { put(root, skel(140), skel(220)); await boot(); }
+  if (seq !== routeSeq) return;
+  window.scrollTo(0, 0);
+  try {
+    if (m) await viewQuestion(root, decodeURIComponent(m[1]));
+    else if (name === "ask") await viewAsk(root);
+    else if (name === "questions") await viewQuestions(root);
+    else if (name === "mine") await viewMine(root);
+    else if (name === "lab") await viewLab(root);
+    else await viewHome(root);
+    if (!firstRoute) root.focus({ preventScroll: true });
+    firstRoute = false;
+  } catch (e) {
+    put(root, h("div", { class: "panel stack", role: "alert" }, h("h1", { text: "This page could not be shown" }), h("p", { class: "muted", text: explain(e) }), h("button", { class: "btn btn-primary", type: "button", text: "Reload", onclick: () => route() })));
+  }
+}
+window.addEventListener("hashchange", route);
+if (readTestKey()) { try { startTestSession(true); } catch (e) { writeTestKey(""); } }
+drawWallet();
+route();
+</script>
+</body>
+</html>
